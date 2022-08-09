@@ -34,24 +34,13 @@ fn tick() {
 }
 
 // Set the given label to the current time whenever it changes
-fn start_tick_loop(label: &gtk::Label) {
+fn start_tick_loop(day_label: &gtk::Label, date_label: &gtk::Label, time_label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     thread::spawn(move || {
         loop {
             let now: DateTime<Local> = Local::now();
-            let text = format!(
-                "{}\n{}\n{:02}\n{:02}\n{:02}\n{:02}\n{:02}",
-                now.weekday(),
-                now.year(),
-                now.month(),
-                now.day(),
-                now.hour(),
-                now.minute(),
-                now.second()
-            );
-
-            sender.send(text).expect("could not send through channel");
+            sender.send(now).expect("could not send through channel");
 
             tick();
         }
@@ -60,10 +49,18 @@ fn start_tick_loop(label: &gtk::Label) {
     receiver.attach(
         None,
         clone!(
-            @weak label =>
+            @weak day_label, @weak date_label, @weak time_label =>
             @default-return Continue(false),
-            move |text| {
-                label.set_label(&text);
+            move |now| {
+                let text = format!("{}", now.weekday());
+                day_label.set_label(&text);
+
+                let text = format!("{}\n{:02}\n{:02}", now.year(), now.month(), now.day());
+                date_label.set_label(&text);
+
+                let text = format!("{:02}\n{:02}\n{:02}", now.hour(), now.minute(), now.second());
+                time_label.set_label(&text);
+
                 Continue(true)
             }
         )
@@ -93,9 +90,21 @@ fn activate(application: &gtk::Application) {
     gtk_layer_shell::auto_exclusive_zone_enable(&window);
     gtk_layer_shell::set_keyboard_interactivity(&window, false);
 
-    let label = gtk::Label::new(None);
-    window.add(&label);
-    start_tick_loop(&label);
+    let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    window.add(&clock_box);
+
+    let day_label = gtk::Label::new(None);
+    clock_box.add(&day_label);
+
+    let date_label = gtk::Label::new(None);
+    date_label.set_justify(gtk::Justification::Center);
+    clock_box.add(&date_label);
+
+    let time_label = gtk::Label::new(None);
+    time_label.set_justify(gtk::Justification::Center);
+    clock_box.add(&time_label);
+
+    start_tick_loop(&day_label, &date_label, &time_label);
 
     window.show_all();
 }
