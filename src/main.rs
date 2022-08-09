@@ -266,31 +266,6 @@ fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
     );
 }
 
-fn make_clock(main_box: &gtk::Box) -> gtk::Box {
-    let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    clock_box.set_vexpand(true);
-    clock_box.set_valign(gtk::Align::Start);
-    main_box.add(&clock_box);
-
-    let day_label = gtk::Label::new(None);
-    day_label.style_context().add_class("electrode");
-    clock_box.add(&day_label);
-
-    let date_label = gtk::Label::new(None);
-    date_label.set_justify(gtk::Justification::Center);
-    date_label.style_context().add_class("electrode");
-    clock_box.add(&date_label);
-
-    let time_label = gtk::Label::new(None);
-    time_label.set_justify(gtk::Justification::Center);
-    time_label.style_context().add_class("electrode");
-    clock_box.add(&time_label);
-
-    start_tick_loop(&day_label, &date_label, &time_label);
-
-    clock_box
-}
-
 fn make_icon(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
     let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);
     parent_box.add(&box_);
@@ -304,6 +279,26 @@ fn make_icon(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
     box_.add(&label);
 
     (box_, label)
+}
+
+fn make_clock(main_box: &gtk::Box) -> gtk::Box {
+    let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    clock_box.set_vexpand(true);
+    clock_box.set_valign(gtk::Align::Start);
+    main_box.add(&clock_box);
+
+    let (day_box, day_label) = make_icon(&clock_box, "");
+    day_box.style_context().add_class("electrode");
+
+    let (date_box, date_label) = make_icon(&clock_box, "");
+    date_box.style_context().add_class("electrode");
+
+    let (time_box, time_label) = make_icon(&clock_box, "");
+    time_box.style_context().add_class("electrode");
+
+    start_tick_loop(&day_label, &date_label, &time_label);
+
+    clock_box
 }
 
 fn activate(application: &gtk::Application) {
