@@ -13,5 +13,6 @@ window > box {
 }
 
 .icon {
+	font-family: "Font Awesome 6 Free";
 	font-size: 1.2em;
 }
