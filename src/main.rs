@@ -78,7 +78,8 @@ fn start_memory_loop(label: &gtk::Label) {
 
         loop {
             let memory = system.memory().expect("could not measure memory usage");
-            let usage = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
+            let free = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
+            let usage = 1.0 - free;
 
             sender.send(usage).expect("could not send through channel");
 
