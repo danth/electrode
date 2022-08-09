@@ -67,6 +67,53 @@ fn start_tick_loop(day_label: &gtk::Label, date_label: &gtk::Label, time_label: 
     );
 }
 
+fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    thread::spawn(move || {
+        loop {
+            match std::fs::read_to_string("/sys/class/power_supply/BAT0/capacity") {
+                Ok(capacity) => {
+                    sender.send(Some(capacity))
+                        .expect("could not send through channel");
+                },
+                Err(_) => {
+                    sender.send(None)
+                        .expect("could not send through channel");
+                }
+            }
+
+            thread::sleep(Duration::from_secs(10));
+        }
+    });
+
+    receiver.attach(
+        None,
+        clone!(
+            @weak box_, @weak label =>
+            @default-return Continue(false),
+            move |capacity| {
+                match capacity {
+                    Some(capacity) => {
+                        // Remove trailing newline
+                        let capacity = capacity.trim();
+
+                        let text = format!("{}%", capacity);
+                        label.set_label(&text);
+
+                        box_.set_visible(true);
+                    }
+                    None => {
+                        box_.set_visible(false);
+                    }
+                }
+
+                Continue(true)
+            }
+        )
+    );
+}
+
 fn activate(application: &gtk::Application) {
     load_css();
 
@@ -92,21 +139,43 @@ fn activate(application: &gtk::Application) {
     gtk_layer_shell::auto_exclusive_zone_enable(&window);
     gtk_layer_shell::set_keyboard_interactivity(&window, false);
 
+    let main_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    window.add(&main_box);
+
     let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    window.add(&clock_box);
+    clock_box.set_valign(gtk::Align::Start);
+    main_box.add(&clock_box);
 
     let day_label = gtk::Label::new(None);
+    day_label.style_context().add_class("electrode");
     clock_box.add(&day_label);
 
     let date_label = gtk::Label::new(None);
     date_label.set_justify(gtk::Justification::Center);
+    date_label.style_context().add_class("electrode");
     clock_box.add(&date_label);
 
     let time_label = gtk::Label::new(None);
     time_label.set_justify(gtk::Justification::Center);
+    time_label.style_context().add_class("electrode");
     clock_box.add(&time_label);
 
     start_tick_loop(&day_label, &date_label, &time_label);
+
+    let battery_box = gtk::Box::new(gtk::Orientation::Vertical, 3);
+    battery_box.set_vexpand(true);
+    battery_box.set_valign(gtk::Align::End);
+    battery_box.style_context().add_class("electrode");
+    main_box.add(&battery_box);
+
+    let battery_icon = gtk::Label::new(Some(""));
+    battery_icon.style_context().add_class("icon");
+    battery_box.add(&battery_icon);
+
+    let battery_label = gtk::Label::new(None);
+    battery_box.add(&battery_label);
+
+    start_battery_loop(&battery_box, &battery_label);
 
     window.show_all();
 }
