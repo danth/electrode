@@ -182,12 +182,35 @@ fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
     );
 }
 
-fn make_icon_electrode(main_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
+fn make_clock(main_box: &gtk::Box) -> gtk::Box {
+    let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    clock_box.set_vexpand(true);
+    clock_box.set_valign(gtk::Align::Start);
+    main_box.add(&clock_box);
+
+    let day_label = gtk::Label::new(None);
+    day_label.style_context().add_class("electrode");
+    clock_box.add(&day_label);
+
+    let date_label = gtk::Label::new(None);
+    date_label.set_justify(gtk::Justification::Center);
+    date_label.style_context().add_class("electrode");
+    clock_box.add(&date_label);
+
+    let time_label = gtk::Label::new(None);
+    time_label.set_justify(gtk::Justification::Center);
+    time_label.style_context().add_class("electrode");
+    clock_box.add(&time_label);
+
+    start_tick_loop(&day_label, &date_label, &time_label);
+
+    clock_box
+}
+
+fn make_icon_electrode(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
     let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);
-    box_.set_vexpand(true);
-    box_.set_valign(gtk::Align::End);
     box_.style_context().add_class("electrode");
-    main_box.add(&box_);
+    parent_box.add(&box_);
 
     let icon = gtk::Label::new(Some(icon));
     icon.style_context().add_class("icon");
@@ -227,33 +250,20 @@ fn activate(application: &gtk::Application) {
     let main_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
     window.add(&main_box);
 
-    let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    clock_box.set_valign(gtk::Align::Start);
-    main_box.add(&clock_box);
+    make_clock(&main_box);
 
-    let day_label = gtk::Label::new(None);
-    day_label.style_context().add_class("electrode");
-    clock_box.add(&day_label);
+    let statistics_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    statistics_box.set_vexpand(true);
+    statistics_box.set_valign(gtk::Align::End);
+    main_box.add(&statistics_box);
 
-    let date_label = gtk::Label::new(None);
-    date_label.set_justify(gtk::Justification::Center);
-    date_label.style_context().add_class("electrode");
-    clock_box.add(&date_label);
-
-    let time_label = gtk::Label::new(None);
-    time_label.set_justify(gtk::Justification::Center);
-    time_label.style_context().add_class("electrode");
-    clock_box.add(&time_label);
-
-    start_tick_loop(&day_label, &date_label, &time_label);
-
-    let (_, memory_label) = make_icon_electrode(&main_box, "");
+    let (_, memory_label) = make_icon_electrode(&statistics_box, "");
     start_memory_loop(&memory_label);
 
-    let (_, cpu_label) = make_icon_electrode(&main_box, "");
+    let (_, cpu_label) = make_icon_electrode(&statistics_box, "");
     start_cpu_loop(&cpu_label);
 
-    let (battery_box, battery_label) = make_icon_electrode(&main_box, "");
+    let (battery_box, battery_label) = make_icon_electrode(&statistics_box, "");
     start_battery_loop(&battery_box, &battery_label);
 
     window.show_all();
