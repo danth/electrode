@@ -70,6 +70,38 @@ fn start_tick_loop(day_label: &gtk::Label, date_label: &gtk::Label, time_label: 
     );
 }
 
+fn start_memory_loop(label: &gtk::Label) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    thread::spawn(move || {
+        let system = System::new();
+
+        loop {
+            let memory = system.memory().expect("could not measure memory usage");
+            let usage = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
+
+            sender.send(usage).expect("could not send through channel");
+
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    receiver.attach(
+        None,
+        clone!(
+            @weak label =>
+            @default-return Continue(false),
+            move |usage| {
+                let percentage = (usage * 100.0).ceil();
+                let text = format!("{}%", percentage);
+                label.set_label(&text);
+
+                Continue(true)
+            }
+        )
+    );
+}
+
 fn start_cpu_loop(label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -214,6 +246,9 @@ fn activate(application: &gtk::Application) {
     clock_box.add(&time_label);
 
     start_tick_loop(&day_label, &date_label, &time_label);
+
+    let (_, memory_label) = make_icon_electrode(&main_box, "");
+    start_memory_loop(&memory_label);
 
     let (_, cpu_label) = make_icon_electrode(&main_box, "");
     start_cpu_loop(&cpu_label);
