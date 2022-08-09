@@ -9,6 +9,9 @@ use gtk::glib::{self, clone};
 extern crate gtk_layer_shell;
 use gtk_layer_shell::{Edge, Layer};
 
+extern crate pulsectl;
+use pulsectl::controllers::{DeviceControl, SinkController};
+
 extern crate systemstat;
 use systemstat::{Platform, System};
 
@@ -115,6 +118,37 @@ fn start_network_loop(upload_label: &gtk::Label, download_label: &gtk::Label) {
             move |(total_upload, total_download)| {
                 upload_label.set_label(&total_upload.to_string_as(true).replace(" ", "\n"));
                 download_label.set_label(&total_download.to_string_as(true).replace(" ", "\n"));
+
+                Continue(true)
+            }
+        )
+    );
+}
+
+fn start_volume_loop(label: &gtk::Label) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    thread::spawn(move || {
+        let mut handler = SinkController::create().expect("could not connect to PulseAudio");
+
+        loop {
+            let device = handler.get_default_device()
+                .expect("could not get default PulseAudio device");
+
+            sender.send(device.volume).expect("could not send through channel");
+
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    receiver.attach(
+        None,
+        clone!(
+            @weak label =>
+            @default-return Continue(false),
+            move |volume| {
+                let text = format!("{}", volume.avg());
+                label.set_label(&text);
 
                 Continue(true)
             }
@@ -335,6 +369,10 @@ fn activate(application: &gtk::Application) {
     statistics_box.set_vexpand(true);
     statistics_box.set_valign(gtk::Align::End);
     main_box.add(&statistics_box);
+
+    let (volume_box, volume_label) = make_icon(&statistics_box, "");
+    volume_box.style_context().add_class("electrode");
+    start_volume_loop(&volume_label);
 
     let network_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
     network_box.style_context().add_class("electrode");

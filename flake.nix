@@ -30,7 +30,7 @@
           };
 
           nativeBuildInputs = with pkgs; [ pkg-config ];
-          buildInputs = with pkgs; [ gtk3 gtk-layer-shell ];
+          buildInputs = with pkgs; [ gtk3 gtk-layer-shell pulseaudio ];
 
           cargoArtifacts = craneLib.buildDepsOnly commonArguments;
         };
