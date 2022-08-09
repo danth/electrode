@@ -1,6 +1,9 @@
 extern crate chrono;
 use chrono::{Local, Datelike, DateTime, Timelike};
 
+extern crate cpu_monitor;
+use cpu_monitor::CpuInstant;
+
 extern crate gtk;
 use gtk::prelude::*;
 use gtk::gdk;
@@ -67,6 +70,41 @@ fn start_tick_loop(day_label: &gtk::Label, date_label: &gtk::Label, time_label: 
     );
 }
 
+fn start_cpu_loop(label: &gtk::Label) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    thread::spawn(move || {
+        let mut instant = CpuInstant::now().expect("could not get CPU instant");
+
+        loop {
+            thread::sleep(Duration::from_secs(1));
+
+            let new_instant = CpuInstant::now().expect("could not get CPU instant");
+            let duration = new_instant - instant;
+            instant = new_instant;
+
+            let percentage = duration.non_idle() * 100.0;
+
+            sender.send(percentage).expect("could not send through channel");
+        }
+    });
+
+    receiver.attach(
+        None,
+        clone!(
+            @weak label =>
+            @default-return Continue(false),
+            move |percentage| {
+                let percentage = percentage.ceil();
+                let text = format!("{}%", percentage);
+                label.set_label(&text);
+
+                Continue(true)
+            }
+        )
+    );
+}
+
 fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -112,6 +150,23 @@ fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
             }
         )
     );
+}
+
+fn make_icon_electrode(main_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
+    let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);
+    box_.set_vexpand(true);
+    box_.set_valign(gtk::Align::End);
+    box_.style_context().add_class("electrode");
+    main_box.add(&box_);
+
+    let icon = gtk::Label::new(Some(icon));
+    icon.style_context().add_class("icon");
+    box_.add(&icon);
+
+    let label = gtk::Label::new(None);
+    box_.add(&label);
+
+    (box_, label)
 }
 
 fn activate(application: &gtk::Application) {
@@ -162,19 +217,10 @@ fn activate(application: &gtk::Application) {
 
     start_tick_loop(&day_label, &date_label, &time_label);
 
-    let battery_box = gtk::Box::new(gtk::Orientation::Vertical, 3);
-    battery_box.set_vexpand(true);
-    battery_box.set_valign(gtk::Align::End);
-    battery_box.style_context().add_class("electrode");
-    main_box.add(&battery_box);
+    let (_, cpu_label) = make_icon_electrode(&main_box, "");
+    start_cpu_loop(&cpu_label);
 
-    let battery_icon = gtk::Label::new(Some(""));
-    battery_icon.style_context().add_class("icon");
-    battery_box.add(&battery_icon);
-
-    let battery_label = gtk::Label::new(None);
-    battery_box.add(&battery_label);
-
+    let (battery_box, battery_label) = make_icon_electrode(&main_box, "");
     start_battery_loop(&battery_box, &battery_label);
 
     window.show_all();
