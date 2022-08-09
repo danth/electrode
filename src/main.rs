@@ -1,9 +1,6 @@
 extern crate chrono;
 use chrono::{Local, Datelike, DateTime, Timelike};
 
-extern crate cpu_monitor;
-use cpu_monitor::CpuInstant;
-
 extern crate gtk;
 use gtk::prelude::*;
 use gtk::gdk;
@@ -11,6 +8,9 @@ use gtk::glib::{self, clone};
 
 extern crate gtk_layer_shell;
 use gtk_layer_shell::{Edge, Layer};
+
+extern crate systemstat;
+use systemstat::{Platform, System};
 
 use std::thread;
 use std::time::Duration;
@@ -74,18 +74,16 @@ fn start_cpu_loop(label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     thread::spawn(move || {
-        let mut instant = CpuInstant::now().expect("could not get CPU instant");
+        let system = System::new();
 
         loop {
+            let cpu = system.cpu_load_aggregate().expect("could not prepare CPU load measurement");
             thread::sleep(Duration::from_secs(1));
+            let cpu = cpu.done().expect("could not complete CPU load measurement");
 
-            let new_instant = CpuInstant::now().expect("could not get CPU instant");
-            let duration = new_instant - instant;
-            instant = new_instant;
+            let usage = 1.0 - cpu.idle;
 
-            let percentage = duration.non_idle() * 100.0;
-
-            sender.send(percentage).expect("could not send through channel");
+            sender.send(usage).expect("could not send through channel");
         }
     });
 
@@ -94,8 +92,8 @@ fn start_cpu_loop(label: &gtk::Label) {
         clone!(
             @weak label =>
             @default-return Continue(false),
-            move |percentage| {
-                let percentage = percentage.ceil();
+            move |usage| {
+                let percentage = (usage * 100.0).ceil();
                 let text = format!("{}%", percentage);
                 label.set_label(&text);
 
@@ -109,15 +107,17 @@ fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
     thread::spawn(move || {
+        let system = System::new();
+
         loop {
-            match std::fs::read_to_string("/sys/class/power_supply/BAT0/capacity") {
-                Ok(capacity) => {
-                    sender.send(Some(capacity))
+            match system.battery_life() {
+                Ok(battery) => {
+                    sender.send(Some(battery.remaining_capacity))
                         .expect("could not send through channel");
                 },
                 Err(_) => {
-                    sender.send(None)
-                        .expect("could not send through channel");
+                    // Most likely there is no battery installed
+                    sender.send(None).expect("could not send through channel");
                 }
             }
 
@@ -133,10 +133,8 @@ fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
             move |capacity| {
                 match capacity {
                     Some(capacity) => {
-                        // Remove trailing newline
-                        let capacity = capacity.trim();
-
-                        let text = format!("{}%", capacity);
+                        let percentage = (capacity * 100.0).ceil();
+                        let text = format!("{}%", percentage);
                         label.set_label(&text);
 
                         box_.set_visible(true);
