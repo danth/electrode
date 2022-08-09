@@ -2,6 +2,10 @@
 name = "electrode"
 version = "0.1.0"
 edition = "2021"
+authors = ["Daniel Thwaites <danthwaites30@btinternet.com>"]
+readme = "README.md"
+repository = "https://github.com/danth/electrode"
+license = "GPL-3.0"
 
 [dependencies]
 chrono = "^0.4"
