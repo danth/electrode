@@ -135,7 +135,7 @@ fn start_volume_loop(label: &gtk::Label) {
             let device = handler.get_default_device()
                 .expect("could not get default PulseAudio device");
 
-            sender.send(device.volume).expect("could not send through channel");
+            sender.send((device.mute, device.volume)).expect("could not send through channel");
 
             thread::sleep(Duration::from_secs(1));
         }
@@ -146,9 +146,13 @@ fn start_volume_loop(label: &gtk::Label) {
         clone!(
             @weak label =>
             @default-return Continue(false),
-            move |volume| {
-                let text = format!("{}", volume.avg());
-                label.set_label(&text);
+            move |(mute, volume)| {
+                if mute {
+                    label.set_label("Mute");
+                } else {
+                    let text = format!("{}", volume.avg());
+                    label.set_label(&text);
+                }
 
                 Continue(true)
             }
