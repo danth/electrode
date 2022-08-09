@@ -1,0 +1,13 @@
+* {
+	color: #363636;
+}
+
+window > box {
+	padding: 5px 0;
+	background-color: #e0e0e0;
+}
+
+label {
+	padding: 5px 0;
+	background-color: #d0d0d0;
+}

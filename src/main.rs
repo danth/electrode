@@ -68,6 +68,8 @@ fn start_tick_loop(day_label: &gtk::Label, date_label: &gtk::Label, time_label: 
 }
 
 fn activate(application: &gtk::Application) {
+    load_css();
+
     let window = gtk::ApplicationWindow::builder()
         .application(application)
         .build();
@@ -109,10 +111,24 @@ fn activate(application: &gtk::Application) {
     window.show_all();
 }
 
+fn load_css() {
+    let provider = gtk::CssProvider::new();
+    provider.load_from_data(include_bytes!("style.css")).expect("loading CSS");
+
+    gtk::StyleContext::add_provider_for_screen(
+        &gdk::Screen::default().expect("could not get default screen"),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION
+    );
+}
+
 fn main() {
     let app = gtk::Application::builder()
         .application_id("com.github.danth.ticker")
         .build();
+
+    app.connect_startup(|_| load_css());
     app.connect_activate(activate);
+
     app.run();
 }

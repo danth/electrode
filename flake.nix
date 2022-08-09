@@ -31,10 +31,21 @@
 
           nativeBuildInputs = with pkgs; [ pkg-config ];
           buildInputs = with pkgs; [ gtk3 gtk-layer-shell ];
+
+          cargoArtifacts = craneLib.buildDepsOnly commonArguments;
         };
 
       in {
         packages.default = craneLib.buildPackage commonArguments;
+
+        lib.makeBase16 = colors: craneLib.buildPackage (commonArguments // {
+          postPatch = ''
+            sed -i src/style.css \
+              -e 's/#e0e0e0/#${colors.base00}/g' \
+              -e 's/#d0d0d0/#${colors.base01}/g' \
+              -e 's/#363636/#${colors.base05}/g'
+          '';
+        });
 
         checks.clippy = craneLib.cargoClippy (commonArguments // {
           cargoClippyExtraArgs = "-- --deny warnings";
