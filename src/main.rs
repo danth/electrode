@@ -70,6 +70,58 @@ fn start_tick_loop(day_label: &gtk::Label, date_label: &gtk::Label, time_label: 
     );
 }
 
+fn start_network_loop(upload_label: &gtk::Label, download_label: &gtk::Label) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    thread::spawn(move || {
+        let system = System::new();
+
+        let mut previous_upload = None;
+        let mut previous_download = None;
+
+        loop {
+            let networks = system.networks().expect("could not get list of networks");
+
+            let mut total_upload = 0;
+            let mut total_download = 0;
+
+            for network in networks.values() {
+                let stats = system.network_stats(&network.name).expect("could not get network statistics");
+                total_upload += stats.tx_bytes.as_u64();
+                total_download += stats.rx_bytes.as_u64();
+            }
+
+            if let Some(previous_upload) = previous_upload {
+                if let Some(previous_download) = previous_download {
+                    sender.send((
+                        systemstat::ByteSize::b(total_upload - previous_upload),
+                        systemstat::ByteSize::b(total_download - previous_download)
+                    )).expect("could not send through channel");
+                }
+            }
+
+            previous_upload = Some(total_upload);
+            previous_download = Some(total_download);
+
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    receiver.attach(
+        None,
+        clone!(
+            @weak upload_label, @weak download_label =>
+            @default-return Continue(false),
+            move |(total_upload, total_download)| {
+                upload_label.set_label(&total_upload.to_string_as(true).replace(" ", "\n"));
+                download_label.set_label(&total_download.to_string_as(true).replace(" ", "\n"));
+
+                Continue(true)
+            }
+        )
+    );
+}
+
 fn start_memory_loop(label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -239,9 +291,8 @@ fn make_clock(main_box: &gtk::Box) -> gtk::Box {
     clock_box
 }
 
-fn make_icon_electrode(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
+fn make_icon(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
     let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);
-    box_.style_context().add_class("electrode");
     parent_box.add(&box_);
 
     let icon = gtk::Label::new(Some(icon));
@@ -249,6 +300,7 @@ fn make_icon_electrode(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Lab
     box_.add(&icon);
 
     let label = gtk::Label::new(None);
+    label.set_justify(gtk::Justification::Center);
     box_.add(&label);
 
     (box_, label)
@@ -289,16 +341,30 @@ fn activate(application: &gtk::Application) {
     statistics_box.set_valign(gtk::Align::End);
     main_box.add(&statistics_box);
 
-    let (_, memory_label) = make_icon_electrode(&statistics_box, "");
+    let network_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    network_box.style_context().add_class("electrode");
+    statistics_box.add(&network_box);
+
+    let (_, upload_label) = make_icon(&network_box, "");
+    let (_, download_label) = make_icon(&network_box, "");
+    start_network_loop(&upload_label, &download_label);
+
+    let (memory_box, memory_label) = make_icon(&statistics_box, "");
+    memory_box.style_context().add_class("electrode");
     start_memory_loop(&memory_label);
 
-    let (_, cpu_label) = make_icon_electrode(&statistics_box, "");
+    let cpu_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    cpu_box.style_context().add_class("electrode");
+    statistics_box.add(&cpu_box);
+
+    let (_, cpu_label) = make_icon(&cpu_box, "");
     start_cpu_loop(&cpu_label);
 
-    let (_, cpu_temperature_label) = make_icon_electrode(&statistics_box, "");
+    let (_, cpu_temperature_label) = make_icon(&cpu_box, "");
     start_cpu_temperature_loop(&cpu_temperature_label);
 
-    let (battery_box, battery_label) = make_icon_electrode(&statistics_box, "");
+    let (battery_box, battery_label) = make_icon(&statistics_box, "");
+    battery_box.style_context().add_class("electrode");
     start_battery_loop(&battery_box, &battery_label);
 
     window.show_all();
