@@ -136,6 +136,37 @@ fn start_cpu_loop(label: &gtk::Label) {
     );
 }
 
+fn start_cpu_temperature_loop(label: &gtk::Label) {
+    let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
+
+    thread::spawn(move || {
+        let system = System::new();
+
+        loop {
+            let cpu_temperature = system.cpu_temp().expect("could not measure CPU temperature");
+
+            sender.send(cpu_temperature).expect("could not send through channel");
+
+            thread::sleep(Duration::from_secs(1));
+        }
+    });
+
+    receiver.attach(
+        None,
+        clone!(
+            @weak label =>
+            @default-return Continue(false),
+            move |cpu_temperature| {
+                let cpu_temperature = cpu_temperature.ceil();
+                let text = format!("{}°C", cpu_temperature);
+                label.set_label(&text);
+
+                Continue(true)
+            }
+        )
+    );
+}
+
 fn start_battery_loop(box_: &gtk::Box, label: &gtk::Label) {
     let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -263,6 +294,9 @@ fn activate(application: &gtk::Application) {
 
     let (_, cpu_label) = make_icon_electrode(&statistics_box, "");
     start_cpu_loop(&cpu_label);
+
+    let (_, cpu_temperature_label) = make_icon_electrode(&statistics_box, "");
+    start_cpu_temperature_loop(&cpu_temperature_label);
 
     let (battery_box, battery_label) = make_icon_electrode(&statistics_box, "");
     start_battery_loop(&battery_box, &battery_label);
