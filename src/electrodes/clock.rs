@@ -27,7 +27,7 @@ impl Electrode for Clock {
         Clock { day_label, date_label, time_label }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         let now: DateTime<Local> = Local::now();
 
         let text = format!("{}", now.weekday());
@@ -38,7 +38,5 @@ impl Electrode for Clock {
 
         let text = format!("{:02}\n{:02}\n{:02}", now.hour(), now.minute(), now.second());
         self.time_label.set_label(&text);
-
-        self
     }
 }

@@ -17,13 +17,11 @@ impl Electrode for CPUTemperature {
         CPUTemperature { label, system }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         let cpu_temperature = self.system.cpu_temp()
             .expect("could not measure CPU temperature");
 
         let text = format!("{}°C", cpu_temperature);
         self.label.set_label(&text);
-
-        self
     }
 }

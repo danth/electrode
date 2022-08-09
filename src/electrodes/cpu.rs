@@ -21,7 +21,7 @@ impl Electrode for CPU {
         CPU { label, system, cpu }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         let cpu = self.cpu.done().expect("could not complete CPU load measurement");
         let usage = 1.0 - cpu.idle;
         let percentage = (usage * 100.0).ceil();
@@ -29,9 +29,8 @@ impl Electrode for CPU {
         let text = format!("{}%", percentage);
         self.label.set_label(&text);
 
-        let cpu = self.system.cpu_load_aggregate()
+        self.cpu = self.system.cpu_load_aggregate()
             .expect("could not prepare CPU load measurement");
-        CPU { cpu, ..self }
     }
 }
 

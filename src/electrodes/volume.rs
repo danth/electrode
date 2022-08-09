@@ -11,7 +11,7 @@ impl Electrode for Volume {
         Volume { label }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         let mut handler = SinkController::create().expect("could not connect to PulseAudio");
         let device = handler.get_default_device().expect("could not get default PulseAudio device");
 
@@ -21,7 +21,5 @@ impl Electrode for Volume {
             let text = format!("{}%", device.volume.avg());
             self.label.set_label(&text);
         }
-
-        self
     }
 }

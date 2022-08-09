@@ -66,16 +66,13 @@ impl Electrode for Network {
         }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         let totals = Totals::current(&self.system);
         let rates = self.previous_totals.rate_of_change(&totals);
 
         self.upload_label.set_label(&rates.upload.to_string_as(true).replace(' ', "\n"));
         self.download_label.set_label(&rates.download.to_string_as(true).replace(' ', "\n"));
 
-        Network {
-            previous_totals: totals,
-            ..self
-        }
+        self.previous_totals = totals;
     }
 }

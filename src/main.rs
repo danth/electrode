@@ -23,7 +23,7 @@ use crate::electrodes::battery::Battery;
 
 pub trait Electrode {
     fn initialize(parent: &gtk::Box) -> Self;
-    fn refresh(self) -> Self;
+    fn refresh(&mut self);
 }
 
 // Sleep until the current time in seconds changes
@@ -118,13 +118,13 @@ fn main() {
     window.show_all();
 
     loop {
-        clock = clock.refresh();
-        volume = volume.refresh();
-        network = network.refresh();
-        memory = memory.refresh();
-        cpu = cpu.refresh();
-        cpu_temperature = cpu_temperature.refresh();
-        battery = battery.refresh();
+        clock.refresh();
+        volume.refresh();
+        network.refresh();
+        memory.refresh();
+        cpu.refresh();
+        cpu_temperature.refresh();
+        battery.refresh();
 
         while gtk::events_pending() {
             gtk::main_iteration_do(false);

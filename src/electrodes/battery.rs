@@ -18,7 +18,7 @@ impl Electrode for Battery {
         Battery { box_, label, system }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         match self.system.battery_life() {
             Ok(battery) => {
                 let percentage = (battery.remaining_capacity * 100.0).ceil();
@@ -34,7 +34,5 @@ impl Electrode for Battery {
                 self.box_.set_visible(false);
             }
         }
-
-        self
     }
 }

@@ -17,7 +17,7 @@ impl Electrode for Memory {
         Memory { label, system }
     }
 
-    fn refresh(self) -> Self {
+    fn refresh(&mut self) {
         let memory = self.system.memory().expect("could not measure memory usage");
         let free = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
         let usage = 1.0 - free;
@@ -25,7 +25,5 @@ impl Electrode for Memory {
 
         let text = format!("{}%", percentage);
         self.label.set_label(&text);
-
-        self
     }
 }
