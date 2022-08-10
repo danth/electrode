@@ -53,7 +53,8 @@ impl Electrode for Clock {
                     let text = format!("{}", now.weekday());
                     day_label.set_label(&text);
 
-                    let text = format!("{}\n{:02}\n{:02}", now.year(), now.month(), now.day());
+                    let year = &now.year().to_string()[2..4];
+                    let text = format!("{}\n{:02}\n{:02}", year, now.month(), now.day());
                     date_label.set_label(&text);
 
                     let text = format!("{:02}\n{:02}\n{:02}", now.hour(), now.minute(), now.second());
