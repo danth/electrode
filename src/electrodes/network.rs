@@ -1,22 +1,28 @@
 use gtk::prelude::*;
-use systemstat::{Platform, platform::PlatformImpl, System};
+use systemstat::{ByteSize, Platform, platform::PlatformImpl, System};
+use std::time::{Duration, Instant};
 use crate::{Electrode, make_icon};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Totals {
-    upload: systemstat::ByteSize,
-    download: systemstat::ByteSize
+    timestamp: Instant,
+    upload: ByteSize,
+    download: ByteSize
 }
 
 #[derive(Debug, Default)]
 struct Rates {
-    upload: systemstat::ByteSize,
-    download: systemstat::ByteSize
+    upload: ByteSize,
+    download: ByteSize
 }
 
 impl Totals {
     fn current(system: &PlatformImpl) -> Self {
-        let mut totals = Totals::default();
+        let mut totals = Totals {
+            timestamp: Instant::now(),
+            upload: ByteSize::b(0),
+            download: ByteSize::b(0)
+        };
 
         let networks = system.networks().expect("could not get list of networks");
         for network in networks.values() {
@@ -32,10 +38,17 @@ impl Totals {
     }
 
     fn rate_of_change(&self, future: &Totals) -> Rates {
-        Rates {
-            upload: systemstat::ByteSize::b(future.upload.as_u64() - self.upload.as_u64()),
-            download: systemstat::ByteSize::b(future.download.as_u64() - self.download.as_u64())
-        }
+        let duration = future.timestamp.duration_since(self.timestamp);
+
+        let upload_change = future.upload.as_u64() - self.upload.as_u64();
+        let upload_rate = (upload_change as f64) / duration.as_secs_f64();
+        let upload_rate = ByteSize::b(upload_rate.ceil() as u64);
+
+        let download_change = future.download.as_u64() - self.download.as_u64();
+        let download_rate = (download_change as f64) / duration.as_secs_f64();
+        let download_rate = ByteSize::b(download_rate.ceil() as u64);
+
+        Rates { upload: upload_rate, download: download_rate }
     }
 }
 
