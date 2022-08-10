@@ -21,7 +21,7 @@ impl Electrode for CPUTemperature {
         let cpu_temperature = self.system.cpu_temp()
             .expect("could not measure CPU temperature");
 
-        let text = format!("{}°C", cpu_temperature);
+        let text = format!("{}°C", cpu_temperature.ceil());
         self.label.set_label(&text);
     }
 }
