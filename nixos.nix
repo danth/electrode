@@ -10,9 +10,9 @@ let
     then self.packages.${pkgs.system}.default.overrideAttrs (_: {
       postPatch = with config.lib.stylix.colors; ''
         sed -i src/style.css \
-          -e 's/#e0e0e0/#${base00}/g' \
-          -e 's/#d0d0d0/#${base01}/g' \
-          -e 's/#363636/#${base05}/g'
+          -e 's/#202020/#${base00}/g' \
+          -e 's/#454545/#${base01}/g' \
+          -e 's/#e0e0e0/#${base05}/g'
       '';
     })
     # normal usage
