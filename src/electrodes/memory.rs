@@ -1,29 +1,31 @@
+use async_std::task;
 use gtk::prelude::*;
-use systemstat::{Platform, platform::PlatformImpl, System};
-use crate::{Electrode, make_icon};
+use gtk::glib::{self, clone};
+use systemstat::{Platform, System};
+use std::time::Duration;
+use crate::electrodes::{Electrode, make_icon};
 
-pub struct Memory {
-    label: gtk::Label,
-    system: PlatformImpl
-}
+pub struct Memory;
 
 impl Electrode for Memory {
-    fn initialize(parent: &gtk::Box) -> Self {
-        let (box_, label) = make_icon(parent, "");
+    fn setup(parent: &gtk::Box) {
+        let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");
 
-        let system = System::new();
+        glib::MainContext::default().spawn_local(clone!(@weak label => async move {
+            let system = System::new();
 
-        Memory { label, system }
-    }
+            loop {
+                let memory = system.memory().expect("could not measure memory usage");
+                let free = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
+                let usage = 1.0 - free;
+                let percentage = (usage * 100.0).ceil();
 
-    fn refresh(&mut self) {
-        let memory = self.system.memory().expect("could not measure memory usage");
-        let free = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
-        let usage = 1.0 - free;
-        let percentage = (usage * 100.0).ceil();
+                let text = format!("{}%", percentage);
+                label.set_label(&text);
 
-        let text = format!("{}%", percentage);
-        self.label.set_label(&text);
+                task::sleep(Duration::from_secs(1)).await;
+            }
+        }));
     }
 }
