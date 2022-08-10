@@ -115,7 +115,7 @@ impl Client {
     fn ingest_server_info(&self, info: &ServerInfo) {
         match info.default_sink_name.as_ref() {
             Some(sink_name) => {
-                borrow_context!(self).introspect().get_sink_info_by_name(&sink_name, clone!(
+                borrow_context!(self).introspect().get_sink_info_by_name(sink_name, clone!(
                     @strong self as client => move |info| client.ingest_sink_info(info)
                 ));
             },
@@ -142,7 +142,7 @@ pub struct Volume;
 
 impl Electrode for Volume {
     fn setup(parent: &gtk::Box) {
-        let (box_, label) = make_icon(&parent, "");
+        let (box_, label) = make_icon(parent, "");
         box_.style_context().add_class("electrode");
         box_.set_visible(false);
 

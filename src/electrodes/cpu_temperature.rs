@@ -8,7 +8,7 @@ pub struct CpuTemperature;
 
 impl Electrode for CpuTemperature {
     fn setup(parent: &gtk::Box) {
-        let (box_, label) = make_icon(&parent, "");
+        let (box_, label) = make_icon(parent, "");
         box_.style_context().add_class("electrode");
 
         glib::MainContext::default().spawn_local(clone!(@weak label => async move {
