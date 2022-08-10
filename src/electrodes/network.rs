@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 use systemstat::{ByteSize, Platform, platform::PlatformImpl, System};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use crate::{Electrode, make_icon};
 
 #[derive(Debug)]

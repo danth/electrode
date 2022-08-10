@@ -9,7 +9,7 @@ pub struct Volume {
 
 impl Electrode for Volume {
     fn initialize(parent: &gtk::Box) -> Self {
-        let (box_, label) = make_icon(&parent, "");
+        let (box_, label) = make_icon(parent, "");
         box_.style_context().add_class("electrode");
 
         let controller = SinkController::create().expect("could not connect to PulseAudio");

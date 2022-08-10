@@ -2,15 +2,15 @@ use gtk::prelude::*;
 use systemstat::{CPULoad, DelayedMeasurement, Platform, platform::PlatformImpl, System};
 use crate::{Electrode, make_icon};
 
-pub struct CPU {
+pub struct Cpu {
     label: gtk::Label,
     system: PlatformImpl,
     cpu: DelayedMeasurement<CPULoad>
 }
 
-impl Electrode for CPU {
+impl Electrode for Cpu {
     fn initialize(parent: &gtk::Box) -> Self {
-        let (box_, label) = make_icon(&parent, "");
+        let (box_, label) = make_icon(parent, "");
         box_.style_context().add_class("electrode");
 
         let system = System::new();
@@ -18,7 +18,7 @@ impl Electrode for CPU {
         let cpu = system.cpu_load_aggregate()
             .expect("could not prepare CPU load measurement");
 
-        CPU { label, system, cpu }
+        Cpu { label, system, cpu }
     }
 
     fn refresh(&mut self) {

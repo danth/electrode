@@ -17,8 +17,8 @@ use crate::electrodes::clock::Clock;
 use crate::electrodes::volume::Volume;
 use crate::electrodes::network::Network;
 use crate::electrodes::memory::Memory;
-use crate::electrodes::cpu::CPU;
-use crate::electrodes::cpu_temperature::CPUTemperature;
+use crate::electrodes::cpu::Cpu;
+use crate::electrodes::cpu_temperature::CpuTemperature;
 use crate::electrodes::battery::Battery;
 
 pub trait Electrode {
@@ -111,8 +111,8 @@ fn main() {
     let mut volume = Volume::initialize(&statistics_box);
     let mut network = Network::initialize(&statistics_box);
     let mut memory = Memory::initialize(&statistics_box);
-    let mut cpu = CPU::initialize(&statistics_box);
-    let mut cpu_temperature = CPUTemperature::initialize(&statistics_box);
+    let mut cpu = Cpu::initialize(&statistics_box);
+    let mut cpu_temperature = CpuTemperature::initialize(&statistics_box);
     let mut battery = Battery::initialize(&statistics_box);
 
     window.show_all();
