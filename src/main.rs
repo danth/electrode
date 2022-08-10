@@ -1,5 +1,6 @@
 extern crate async_std;
 extern crate chrono;
+extern crate clap;
 extern crate gtk;
 extern crate gtk_layer_shell;
 extern crate libpulse_binding;
@@ -7,6 +8,7 @@ extern crate systemstat;
 
 mod electrodes;
 
+use clap::Parser;
 use gtk::gdk;
 use gtk::prelude::*;
 use gtk_layer_shell::{Edge, Layer};
@@ -20,6 +22,15 @@ use crate::electrodes::cpu::Cpu;
 use crate::electrodes::cpu_temperature::CpuTemperature;
 use crate::electrodes::battery::Battery;
 
+#[derive(Parser)]
+/// A no-configuration status bar for Wayland compositors
+#[clap(name = "Electrode")]
+struct Cli {
+    /// Enable extra statistics such as CPU and memory usage
+    #[clap(long, parse(from_flag))]
+    extended: bool
+}
+
 fn load_css() {
     let provider = gtk::CssProvider::new();
     provider.load_from_data(include_bytes!("style.css")).expect("loading CSS");
@@ -32,6 +43,9 @@ fn load_css() {
 }
 
 fn main() {
+    // Panics if the arguments are invalid
+    let arguments = Cli::parse();
+
     gtk::init().expect("could not initialise GTK");
 
     load_css();
@@ -67,14 +81,18 @@ fn main() {
     main_box.add(&statistics_box);
 
     Volume::setup(&statistics_box);
-    Network::setup(&statistics_box);
-    Memory::setup(&statistics_box);
 
-    let cpu_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    cpu_box.style_context().add_class("electrode");
-    main_box.add(&cpu_box);
-    Cpu::setup(&cpu_box);
-    CpuTemperature::setup(&cpu_box);
+    if arguments.extended {
+        Network::setup(&statistics_box);
+        Memory::setup(&statistics_box);
+
+        let cpu_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+        cpu_box.style_context().add_class("electrode");
+        main_box.add(&cpu_box);
+
+        Cpu::setup(&cpu_box);
+        CpuTemperature::setup(&cpu_box);
+    }
 
     Battery::setup(&statistics_box);
 
