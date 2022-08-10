@@ -1,14 +1,11 @@
 use gtk::prelude::*;
-use gtk::glib::clone;
+use gtk::glib::{self, clone};
 use libpulse_binding::callbacks::ListResult;
 use libpulse_binding::context::{Context, FlagSet, State};
 use libpulse_binding::context::introspect::{ServerInfo, SinkInfo};
-use libpulse_binding::context::subscribe::{Facility, InterestMaskSet};
+use libpulse_binding::context::subscribe::InterestMaskSet;
 use libpulse_binding::mainloop::standard::{IterateResult, Mainloop};
 use libpulse_binding::proplist::{Proplist};
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use crate::{Electrode, make_icon};
@@ -44,7 +41,7 @@ fn connect_to_pulseaudio() -> (Mainloop, Context) {
     (mainloop, context)
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum VolumeSetting {
     Muted,
     Volume(libpulse_binding::volume::Volume)
@@ -64,46 +61,50 @@ impl From<&SinkInfo<'_>> for VolumeSetting {
 
 #[derive(Clone)]
 struct Client {
-    default_sink: Arc<Mutex<Option<String>>>,
-    sinks: Arc<Mutex<HashMap<String, VolumeSetting>>>
+    sender: Arc<glib::Sender<Option<VolumeSetting>>>,
+    context: Arc<Mutex<Option<Context>>>
+}
+
+macro_rules! borrow_context {
+    ($self:ident) => {
+        $self.context.lock().unwrap().as_mut().expect("PulseAudio context has not been initialised")
+    }
 }
 
 impl Client {
-    fn new() -> Self {
+    fn new(sender: glib::Sender<Option<VolumeSetting>>) -> Self {
         let client = Client {
-            default_sink: Arc::new(Mutex::new(None)),
-            sinks: Arc::new(Mutex::new(HashMap::new()))
+            sender: Arc::new(sender),
+            context: Arc::new(Mutex::new(None))
         };
 
         thread::spawn(clone!(@strong client => move || {
             let (mut mainloop, context) = connect_to_pulseaudio();
-            let context = Rc::new(RefCell::new(context));
 
-            context.borrow_mut().introspect().get_server_info(clone!(
-                @strong client => move |info| client.ingest_server_info(info)
-            ));
-            context.borrow_mut().introspect().get_sink_info_list(clone!(
-                @strong client => move |info| client.ingest_sink_info(info)
+            {
+                let mut context_lock = client.context.lock().unwrap();
+                *context_lock = Some(context);
+            }
+
+            borrow_context!(client).introspect().get_server_info(clone!(
+                @strong client =>
+                move |info| client.ingest_server_info(info)
             ));
 
-            let subscribe_callback = clone!(@strong context => move |facility, _, index| {
-                match facility {
-                    Some(Facility::Server) => {
-                        context.borrow_mut().introspect().get_server_info(clone!(
-                            @strong client => move |info| client.ingest_server_info(info)
-                        ));
-                    },
-                    Some(Facility::Sink) => {
-                        context.borrow_mut().introspect().get_sink_info_by_index(index, clone!(
-                            @strong client => move |result| client.ingest_sink_info(result)
-                        ));
-                    },
-                    _ => {}
+            let subscribe_callback = clone!(
+                @strong client =>
+                move |_, _, _| {
+                    borrow_context!(client).introspect().get_server_info(clone!(
+                        @strong client =>
+                        move |info| client.ingest_server_info(info)
+                    ));
                 }
-            });
+            );
 
-            context.borrow_mut().set_subscribe_callback(Some(Box::new(subscribe_callback)));
-            context.borrow_mut().subscribe(InterestMaskSet::SERVER | InterestMaskSet::SINK, |_| {});
+            borrow_context!(client)
+                .set_subscribe_callback(Some(Box::new(subscribe_callback)));
+            borrow_context!(client)
+                .subscribe(InterestMaskSet::SERVER | InterestMaskSet::SINK, |_| {});
 
             mainloop.run().unwrap();
         }));
@@ -112,66 +113,64 @@ impl Client {
     }
 
     fn ingest_server_info(&self, info: &ServerInfo) {
-        if let Some(sink_name) = info.default_sink_name.as_ref() {
-            let mut default_sink = self.default_sink.lock().unwrap();
-            *default_sink = Some(sink_name.to_string());
+        match info.default_sink_name.as_ref() {
+            Some(sink_name) => {
+                borrow_context!(self).introspect().get_sink_info_by_name(&sink_name, clone!(
+                    @strong self as client => move |info| client.ingest_sink_info(info)
+                ));
+            },
+            None => {
+                self.send_event(None);
+            }
         }
     }
 
     fn ingest_sink_info(&self, result: ListResult<&SinkInfo>) {
         match result {
-            ListResult::Item(sink) => {
-                if let Some(name) = &sink.name {
-                    let mut sinks = self.sinks.lock().unwrap();
-                    sinks.insert(name.to_string(), sink.into());
-                }
-            },
-            ListResult::End => {},
-            ListResult::Error => {
-                panic!("error fetching sink info from PulseAudio");
-            }
+            ListResult::Item(sink) => self.send_event(Some(sink.into())),
+            ListResult::End => (),
+            ListResult::Error => panic!("error fetching sink info from PulseAudio")
         }
     }
 
-    fn get_default_sink_volume(&self) -> Option<VolumeSetting> {
-        self.default_sink.lock().unwrap().as_ref().and_then(|default_sink| {
-            let sinks = self.sinks.lock().unwrap();
-            sinks.get(default_sink).map(|sink| sink.clone())
-        })
+    fn send_event(&self, volume: Option<VolumeSetting>) {
+        self.sender.send(volume).expect("sending volume change through channel");
     }
 }
 
-pub struct Volume {
-    box_: gtk::Box,
-    label: gtk::Label,
-    client: Client
-}
+pub struct Volume;
 
 impl Electrode for Volume {
-    fn initialize(parent: &gtk::Box) -> Self {
+    fn start(parent: &gtk::Box) {
         let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");
+        box_.set_visible(false);
 
-        Volume {
-            box_, label,
-            client: Client::new()
-        }
-    }
+        let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
-    fn refresh(&mut self) {
-        if let Some(volume) = self.client.get_default_sink_volume() {
-            match volume {
-                VolumeSetting::Muted => {
-                    self.label.set_label("Mute");
-                },
-                VolumeSetting::Volume(volume) => {
-                    self.label.set_label(&volume.to_string());
+        Client::new(sender);
+
+        receiver.attach(None, clone!(
+            @weak label =>
+            @default-return Continue(false),
+            move |volume| {
+                if let Some(volume) = volume {
+                    match volume {
+                        VolumeSetting::Muted => {
+                            label.set_label("Mute");
+                        },
+                        VolumeSetting::Volume(volume) => {
+                            label.set_label(&volume.to_string());
+                        }
+                    }
+
+                    box_.set_visible(true);
+                } else {
+                    box_.set_visible(false);
                 }
-            }
 
-            self.box_.set_visible(true);
-        } else {
-            self.box_.set_visible(false);
-        }
+                Continue(true)
+            }
+        ));
     }
 }

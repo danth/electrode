@@ -1,6 +1,6 @@
 use chrono::{Local, Datelike, DateTime, Timelike};
 use gtk::prelude::*;
-use crate::{Electrode, make_icon};
+use crate::{PollingElectrode, make_icon};
 
 pub struct Clock {
     day_label: gtk::Label,
@@ -8,7 +8,7 @@ pub struct Clock {
     time_label: gtk::Label
 }
 
-impl Electrode for Clock {
+impl PollingElectrode for Clock {
     fn initialize(parent: &gtk::Box) -> Self {
         let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
         clock_box.set_vexpand(true);

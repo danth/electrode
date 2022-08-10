@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 use systemstat::{CPULoad, DelayedMeasurement, Platform, platform::PlatformImpl, System};
-use crate::{Electrode, make_icon};
+use crate::{PollingElectrode, make_icon};
 
 pub struct CPU {
     label: gtk::Label,
@@ -8,7 +8,7 @@ pub struct CPU {
     cpu: DelayedMeasurement<CPULoad>
 }
 
-impl Electrode for CPU {
+impl PollingElectrode for CPU {
     fn initialize(parent: &gtk::Box) -> Self {
         let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");

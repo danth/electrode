@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 use systemstat::{Platform, platform::PlatformImpl, System};
-use crate::{Electrode, make_icon};
+use crate::{PollingElectrode, make_icon};
 
 pub struct Battery {
     box_: gtk::Box,
@@ -8,7 +8,7 @@ pub struct Battery {
     system: PlatformImpl
 }
 
-impl Electrode for Battery {
+impl PollingElectrode for Battery {
     fn initialize(parent: &gtk::Box) -> Self {
         let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");

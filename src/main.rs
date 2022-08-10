@@ -21,9 +21,13 @@ use crate::electrodes::cpu::CPU;
 use crate::electrodes::cpu_temperature::CPUTemperature;
 use crate::electrodes::battery::Battery;
 
-pub trait Electrode {
+pub trait PollingElectrode {
     fn initialize(parent: &gtk::Box) -> Self;
     fn refresh(&mut self);
+}
+
+pub trait Electrode {
+    fn start(parent: &gtk::Box);
 }
 
 // Sleep until the current time in seconds changes
@@ -108,7 +112,7 @@ fn main() {
     statistics_box.set_valign(gtk::Align::End);
     main_box.add(&statistics_box);
 
-    let mut volume = Volume::initialize(&statistics_box);
+    Volume::start(&statistics_box);
     let mut network = Network::initialize(&statistics_box);
     let mut memory = Memory::initialize(&statistics_box);
     let mut cpu = CPU::initialize(&statistics_box);
@@ -119,7 +123,6 @@ fn main() {
 
     loop {
         clock.refresh();
-        volume.refresh();
         network.refresh();
         memory.refresh();
         cpu.refresh();

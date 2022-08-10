@@ -1,6 +1,6 @@
 use gtk::prelude::*;
 use systemstat::{Platform, platform::PlatformImpl, System};
-use crate::{Electrode, make_icon};
+use crate::{PollingElectrode, make_icon};
 
 #[derive(Debug, Default)]
 struct Totals {
@@ -46,7 +46,7 @@ pub struct Network {
     previous_totals: Totals
 }
 
-impl Electrode for Network {
+impl PollingElectrode for Network {
     fn initialize(parent: &gtk::Box) -> Self {
         let network_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
         network_box.style_context().add_class("electrode");

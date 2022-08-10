@@ -1,13 +1,13 @@
 use gtk::prelude::*;
 use systemstat::{Platform, platform::PlatformImpl, System};
-use crate::{Electrode, make_icon};
+use crate::{PollingElectrode, make_icon};
 
 pub struct CPUTemperature {
     label: gtk::Label,
     system: PlatformImpl
 }
 
-impl Electrode for CPUTemperature {
+impl PollingElectrode for CPUTemperature {
     fn initialize(parent: &gtk::Box) -> Self {
         let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");
