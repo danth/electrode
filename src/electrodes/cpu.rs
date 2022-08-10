@@ -8,8 +8,7 @@ pub struct Cpu;
 
 impl Electrode for Cpu {
     fn setup(parent: &gtk::Box) {
-        let (box_, label) = make_icon(parent, "");
-        box_.style_context().add_class("electrode");
+        let (_, label) = make_icon(parent, "");
 
         glib::MainContext::default().spawn_local(clone!(@weak label => async move {
             let system = System::new();
