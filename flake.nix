@@ -52,13 +52,7 @@
         });
 
         devShells.default = with pkgs; mkShell {
-          nativeBuildInputs = [
-            cargo
-            (writeShellScriptBin "rustfmt" ''
-              PATH=${rustfmt.override { asNightly = true; }}/bin
-              rustfmt src/*.rs
-            '')
-          ];
+          nativeBuildInputs = [ cargo ];
         };
       }
     );
