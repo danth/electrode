@@ -7,6 +7,9 @@ pub mod cpu_temperature;
 pub mod battery;
 
 use gtk::prelude::*;
+use std::time::Duration;
+
+pub const DEFAULT_POLLING_DURATION: Duration = Duration::from_millis(2500);
 
 pub fn make_icon(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
     let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);

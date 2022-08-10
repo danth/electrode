@@ -2,8 +2,8 @@ use async_std::task;
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
 use systemstat::{ByteSize, Platform, platform::PlatformImpl, System};
-use std::time::{Duration, Instant};
-use crate::electrodes::{Electrode, make_icon};
+use std::time::{Instant};
+use crate::electrodes::{DEFAULT_POLLING_DURATION, Electrode, make_icon};
 
 #[derive(Debug)]
 struct Totals {
@@ -72,7 +72,7 @@ impl Electrode for Network {
                 let mut previous_totals = Totals::current(&system);
 
                 loop {
-                    task::sleep(Duration::from_secs(1)).await;
+                    task::sleep(DEFAULT_POLLING_DURATION).await;
 
                     let totals = Totals::current(&system);
                     let rates = previous_totals.rate_of_change(&totals);

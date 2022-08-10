@@ -2,8 +2,7 @@ use async_std::task;
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
 use systemstat::{Platform, System};
-use std::time::Duration;
-use crate::electrodes::{Electrode, make_icon};
+use crate::electrodes::{DEFAULT_POLLING_DURATION, Electrode, make_icon};
 
 pub struct Memory;
 
@@ -24,7 +23,7 @@ impl Electrode for Memory {
                 let text = format!("{}%", percentage);
                 label.set_label(&text);
 
-                task::sleep(Duration::from_secs(1)).await;
+                task::sleep(DEFAULT_POLLING_DURATION).await;
             }
         }));
     }
