@@ -3,22 +3,7 @@ self:
 
 with lib;
 
-let
-  package =
-    # https://github.com/danth/stylix integration
-    if config.lib ? stylix
-    then self.packages.${pkgs.system}.default.overrideAttrs (_: {
-      postPatch = with config.lib.stylix.colors; ''
-        sed -i src/style.css \
-          -e 's/#202020/#${base00}/g' \
-          -e 's/#454545/#${base01}/g' \
-          -e 's/#e0e0e0/#${base05}/g'
-      '';
-    })
-    # normal usage
-    else self.packages.${pkgs.system}.default;
-
-in {
+{
   options.programs.electrode = {
     enable = mkOption {
       description = "Whether to install the Electrode status bar";
@@ -45,7 +30,7 @@ in {
       wantedBy = [ "graphical-session.target" ];
 
       serviceConfig.ExecStart =
-        "${package}/bin/electrode"
+        "${self.packages.${pkgs.system}.default}/bin/electrode"
         + optionalString config.programs.electrode.extended " --extended";
     };
 

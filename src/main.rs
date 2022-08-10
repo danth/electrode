@@ -60,8 +60,8 @@ fn main() {
         .expect("could not get first monitor");
 
     let height = monitor.geometry().height();
-    window.set_default_size(40, height);
-    window.set_size_request(40, height);
+    window.set_default_size(45, height);
+    window.set_size_request(45, height);
 
     gtk_layer_shell::init_for_window(&window);
     gtk_layer_shell::set_monitor(&window, &monitor);

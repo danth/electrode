@@ -51,9 +51,3 @@ ExecStart=/path/to/electrode/bin/electrode
 ```
 
 Change `ExecStart` to the location of your compiled Electrode binary.
-
-## Why the name?
-
-It looks a bit like the end of this phone battery.
-
-![A Nokia battery](https://i.stack.imgur.com/upgXL.jpg)

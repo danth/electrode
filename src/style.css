@@ -1,15 +1,9 @@
-* {
-	color: #e0e0e0;
-}
-
 window > box {
 	padding: 5px 0;
-	background-color: #202020;
 }
 
 .electrode {
 	padding: 5px 0;
-	background-color: #454545;
 }
 
 .icon {
