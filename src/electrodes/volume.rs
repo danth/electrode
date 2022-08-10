@@ -8,7 +8,7 @@ use libpulse_binding::mainloop::standard::{IterateResult, Mainloop};
 use libpulse_binding::proplist::{Proplist};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use crate::{Electrode, make_icon};
+use crate::electrodes::{Electrode, make_icon};
 
 fn connect_to_pulseaudio() -> (Mainloop, Context) {
     let mut proplist = Proplist::new().expect("could not create PulseAudio proplist");
@@ -141,7 +141,7 @@ impl Client {
 pub struct Volume;
 
 impl Electrode for Volume {
-    fn start(parent: &gtk::Box) {
+    fn setup(parent: &gtk::Box) {
         let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");
         box_.set_visible(false);

@@ -1,38 +1,42 @@
+use async_std::task;
 use gtk::prelude::*;
-use systemstat::{Platform, platform::PlatformImpl, System};
-use crate::{PollingElectrode, make_icon};
+use gtk::glib::{self, clone};
+use systemstat::{Platform, System};
+use std::time::Duration;
+use crate::electrodes::{Electrode, make_icon};
 
-pub struct Battery {
-    box_: gtk::Box,
-    label: gtk::Label,
-    system: PlatformImpl
-}
+pub struct Battery;
 
-impl PollingElectrode for Battery {
-    fn initialize(parent: &gtk::Box) -> Self {
+impl Electrode for Battery {
+    fn setup(parent: &gtk::Box) {
         let (box_, label) = make_icon(&parent, "");
         box_.style_context().add_class("electrode");
 
-        let system = System::new();
+        glib::MainContext::default().spawn_local(clone!(
+            @weak box_, @weak label =>
+            async move {
+                let system = System::new();
 
-        Battery { box_, label, system }
-    }
+                loop {
+                    match system.battery_life() {
+                        Ok(battery) => {
+                            let percentage = (battery.remaining_capacity * 100.0).ceil();
 
-    fn refresh(&mut self) {
-        match self.system.battery_life() {
-            Ok(battery) => {
-                let percentage = (battery.remaining_capacity * 100.0).ceil();
+                            let text = format!("{}%", percentage);
+                            label.set_label(&text);
 
-                let text = format!("{}%", percentage);
-                self.label.set_label(&text);
+                            box_.set_visible(true);
+                        },
 
-                self.box_.set_visible(true);
-            },
+                        Err(_) => {
+                            // Most likely there is no battery installed
+                            box_.set_visible(false);
+                        }
+                    }
 
-            Err(_) => {
-                // Most likely there is no battery installed
-                self.box_.set_visible(false);
+                    task::sleep(Duration::from_secs(1)).await;
+                }
             }
-        }
+        ));
     }
 }

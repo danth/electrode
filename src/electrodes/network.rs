@@ -1,6 +1,9 @@
+use async_std::task;
 use gtk::prelude::*;
+use gtk::glib::{self, clone};
 use systemstat::{Platform, platform::PlatformImpl, System};
-use crate::{PollingElectrode, make_icon};
+use std::time::Duration;
+use crate::electrodes::{Electrode, make_icon};
 
 #[derive(Debug, Default)]
 struct Totals {
@@ -39,15 +42,10 @@ impl Totals {
     }
 }
 
-pub struct Network {
-    upload_label: gtk::Label,
-    download_label: gtk::Label,
-    system: PlatformImpl,
-    previous_totals: Totals
-}
+pub struct Network;
 
-impl PollingElectrode for Network {
-    fn initialize(parent: &gtk::Box) -> Self {
+impl Electrode for Network {
+    fn setup(parent: &gtk::Box) {
         let network_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
         network_box.style_context().add_class("electrode");
         parent.add(&network_box);
@@ -55,24 +53,24 @@ impl PollingElectrode for Network {
         let (_, upload_label) = make_icon(&network_box, "");
         let (_, download_label) = make_icon(&network_box, "");
 
-        let system = System::new();
-        let totals = Totals::current(&system);
+        glib::MainContext::default().spawn_local(clone!(
+            @weak upload_label, @weak download_label =>
+            async move {
+                let system = System::new();
+                let mut previous_totals = Totals::current(&system);
 
-        Network {
-            upload_label,
-            download_label,
-            system,
-            previous_totals: totals
-        }
-    }
+                loop {
+                    task::sleep(Duration::from_secs(1)).await;
 
-    fn refresh(&mut self) {
-        let totals = Totals::current(&self.system);
-        let rates = self.previous_totals.rate_of_change(&totals);
+                    let totals = Totals::current(&system);
+                    let rates = previous_totals.rate_of_change(&totals);
 
-        self.upload_label.set_label(&rates.upload.to_string_as(true).replace(' ', "\n"));
-        self.download_label.set_label(&rates.download.to_string_as(true).replace(' ', "\n"));
+                    upload_label.set_label(&rates.upload.to_string_as(true).replace(' ', "\n"));
+                    download_label.set_label(&rates.download.to_string_as(true).replace(' ', "\n"));
 
-        self.previous_totals = totals;
+                    previous_totals = totals;
+                }
+            }
+        ));
     }
 }
