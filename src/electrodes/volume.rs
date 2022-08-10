@@ -24,8 +24,7 @@ impl Electrode for Volume {
         if device.mute {
             self.label.set_label("Mute");
         } else {
-            let text = format!("{}%", device.volume.avg());
-            self.label.set_label(&text);
+            self.label.set_label(&device.volume.avg().to_string());
         }
     }
 }
