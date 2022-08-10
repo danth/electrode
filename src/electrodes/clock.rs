@@ -1,5 +1,5 @@
 use async_std::task;
-use chrono::{Local, Datelike, DateTime, Timelike};
+use chrono::{Local, Datelike, DateTime, Timelike, Utc};
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
 use std::time::Duration;
@@ -7,7 +7,7 @@ use crate::electrodes::{Electrode, make_icon};
 
 // Sleep until the current time in seconds changes
 async fn tick() {
-    let now: DateTime<Local> = Local::now();
+    let now: DateTime<Utc> = Utc::now();
 
     let duration_since_tick = now - now.with_nanosecond(0).unwrap();
 
