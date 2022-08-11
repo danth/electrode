@@ -9,7 +9,6 @@ pub struct Battery;
 impl Electrode for Battery {
     fn setup(parent: &gtk::Box) {
         let (box_, label) = make_icon(parent, "");
-        box_.style_context().add_class("electrode");
 
         glib::MainContext::default().spawn_local(clone!(
             @weak box_, @weak label =>

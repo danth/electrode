@@ -30,19 +30,9 @@ pub struct Clock;
 
 impl Electrode for Clock {
     fn setup(parent: &gtk::Box) {
-        let clock_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-        clock_box.set_vexpand(true);
-        clock_box.set_valign(gtk::Align::Start);
-        parent.add(&clock_box);
-
-        let (day_box, day_label) = make_icon(&clock_box, "");
-        day_box.style_context().add_class("electrode");
-
-        let (date_box, date_label) = make_icon(&clock_box, "");
-        date_box.style_context().add_class("electrode");
-
-        let (time_box, time_label) = make_icon(&clock_box, "");
-        time_box.style_context().add_class("electrode");
+        let (_, day_label) = make_icon(&parent, "");
+        let (_, date_label) = make_icon(&parent, "");
+        let (_, time_label) = make_icon(&parent, "");
 
         glib::MainContext::default().spawn_local(clone!(
             @weak day_label, @weak date_label, @weak time_label =>

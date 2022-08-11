@@ -85,13 +85,8 @@ fn main() {
     if arguments.extended {
         Network::setup(&statistics_box);
         Memory::setup(&statistics_box);
-
-        let cpu_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-        cpu_box.style_context().add_class("electrode");
-        main_box.add(&cpu_box);
-
-        Cpu::setup(&cpu_box);
-        CpuTemperature::setup(&cpu_box);
+        Cpu::setup(&statistics_box);
+        CpuTemperature::setup(&statistics_box);
     }
 
     Battery::setup(&statistics_box);

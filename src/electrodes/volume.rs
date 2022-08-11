@@ -143,7 +143,6 @@ pub struct Volume;
 impl Electrode for Volume {
     fn setup(parent: &gtk::Box) {
         let (box_, label) = make_icon(parent, "");
-        box_.style_context().add_class("electrode");
         box_.set_visible(false);
 
         let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);

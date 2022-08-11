@@ -13,6 +13,7 @@ pub const DEFAULT_POLLING_DURATION: Duration = Duration::from_millis(2500);
 
 pub fn make_icon(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
     let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);
+    box_.style_context().add_class("electrode");
     parent_box.add(&box_);
 
     let icon = gtk::Label::new(Some(icon));
