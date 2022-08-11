@@ -58,8 +58,8 @@ pub struct Network;
 
 impl Electrode for Network {
     fn setup(parent: &gtk::Box) {
-        let (_, upload_label) = make_icon(&parent, "");
-        let (_, download_label) = make_icon(&parent, "");
+        let (_, upload_label) = make_icon(parent, "");
+        let (_, download_label) = make_icon(parent, "");
 
         glib::MainContext::default().spawn_local(clone!(
             @weak upload_label, @weak download_label =>

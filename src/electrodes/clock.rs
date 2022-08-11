@@ -30,9 +30,9 @@ pub struct Clock;
 
 impl Electrode for Clock {
     fn setup(parent: &gtk::Box) {
-        let (_, day_label) = make_icon(&parent, "");
-        let (_, date_label) = make_icon(&parent, "");
-        let (_, time_label) = make_icon(&parent, "");
+        let (_, day_label) = make_icon(parent, "");
+        let (_, date_label) = make_icon(parent, "");
+        let (_, time_label) = make_icon(parent, "");
 
         glib::MainContext::default().spawn_local(clone!(
             @weak day_label, @weak date_label, @weak time_label =>
