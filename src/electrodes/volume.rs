@@ -156,7 +156,7 @@ impl Electrode for Volume {
                 if let Some(volume) = volume {
                     match volume {
                         VolumeSetting::Muted => {
-                            label.set_label("Mute");
+                            label.set_label("Off");
                         },
                         VolumeSetting::Volume(volume) => {
                             label.set_label(&volume.to_string());
