@@ -159,8 +159,18 @@ impl Electrode for Volume {
                             label.set_label("00");
                         },
                         VolumeSetting::Volume(volume) => {
-                            let text = format!("{:02}", volume);
-                            label.set_label(&text);
+                            let percentage = volume.print();
+
+                            // Remove the % symbol
+                            let text = percentage[.. percentage.len() - 1].trim().to_string();
+
+                            // Pad to 2 characters
+                            if text.len() >= 2 {
+                                label.set_label(&text);
+                            } else {
+                                let text = format!("0{}", text);
+                                label.set_label(&text);
+                            }
                         }
                     }
 
