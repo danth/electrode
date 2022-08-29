@@ -156,10 +156,11 @@ impl Electrode for Volume {
                 if let Some(volume) = volume {
                     match volume {
                         VolumeSetting::Muted => {
-                            label.set_label("Off");
+                            label.set_label("00");
                         },
                         VolumeSetting::Volume(volume) => {
-                            label.set_label(&volume.to_string());
+                            let text = format!("{:02}", volume);
+                            label.set_label(&text);
                         }
                     }
 

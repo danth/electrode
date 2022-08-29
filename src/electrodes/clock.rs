@@ -1,5 +1,5 @@
 use async_std::task;
-use chrono::{Local, Datelike, DateTime, Timelike, Utc};
+use chrono::{Local, Datelike, DateTime, Timelike, Utc, Weekday};
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
 use std::time::Duration;
@@ -40,7 +40,15 @@ impl Electrode for Clock {
                 loop {
                     let now: DateTime<Local> = Local::now();
 
-                    let text = format!("{}", now.weekday());
+                    let text = match now.weekday() {
+                        Weekday::Mon => "mo",
+                        Weekday::Tue => "tu",
+                        Weekday::Wed => "we",
+                        Weekday::Thu => "th",
+                        Weekday::Fri => "fr",
+                        Weekday::Sat => "sa",
+                        Weekday::Sun => "su"
+                    };
                     day_label.set_label(&text);
 
                     let year = &now.year().to_string()[2..4];

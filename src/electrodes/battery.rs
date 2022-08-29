@@ -20,7 +20,7 @@ impl Electrode for Battery {
                         Ok(battery) => {
                             let percentage = (battery.remaining_capacity * 100.0).ceil();
 
-                            let text = format!("{}%", percentage);
+                            let text = format!("{:02}", percentage);
                             label.set_label(&text);
 
                             box_.set_visible(true);

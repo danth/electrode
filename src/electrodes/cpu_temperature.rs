@@ -17,7 +17,7 @@ impl Electrode for CpuTemperature {
                 let cpu_temperature = system.cpu_temp()
                     .expect("could not measure CPU temperature");
 
-                let text = format!("{}°C", cpu_temperature.ceil());
+                let text = format!("{:02}", cpu_temperature.ceil());
                 label.set_label(&text);
 
                 task::sleep(DEFAULT_POLLING_DURATION).await;

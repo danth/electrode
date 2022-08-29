@@ -21,7 +21,7 @@ impl Electrode for Cpu {
                 let usage = 1.0 - cpu_done.idle;
                 let percentage = (usage * 100.0).ceil();
 
-                let text = format!("{}%", percentage);
+                let text = format!("{:02}", percentage);
                 label.set_label(&text);
 
                 cpu = system.cpu_load_aggregate()

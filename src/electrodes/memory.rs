@@ -19,7 +19,7 @@ impl Electrode for Memory {
                 let usage = 1.0 - free;
                 let percentage = (usage * 100.0).ceil();
 
-                let text = format!("{}%", percentage);
+                let text = format!("{:02}", percentage);
                 label.set_label(&text);
 
                 task::sleep(DEFAULT_POLLING_DURATION).await;
