@@ -49,7 +49,7 @@ impl Electrode for Clock {
                         Weekday::Sat => "sa",
                         Weekday::Sun => "su"
                     };
-                    day_label.set_label(&text);
+                    day_label.set_label(text);
 
                     let year = &now.year().to_string()[2..4];
                     let text = format!("{}\n{:02}\n{:02}", year, now.month(), now.day());
