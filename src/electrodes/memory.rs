@@ -17,9 +17,9 @@ impl Electrode for Memory {
                 let memory = system.memory().expect("could not measure memory usage");
                 let free = (memory.free.as_u64() as f64) / (memory.total.as_u64() as f64);
                 let usage = 1.0 - free;
-                let percentage = (usage * 100.0).ceil();
+                let percentage = usage * 100.0;
 
-                let text = format!("{:02}", percentage);
+                let text = format!("{:02.0}", percentage);
                 label.set_label(&text);
 
                 task::sleep(DEFAULT_POLLING_DURATION).await;

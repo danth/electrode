@@ -19,9 +19,9 @@ impl Electrode for Cpu {
             loop {
                 let cpu_done = cpu.done().expect("could not complete CPU load measurement");
                 let usage = 1.0 - cpu_done.idle;
-                let percentage = (usage * 100.0).ceil();
+                let percentage = usage * 100.0;
 
-                let text = format!("{:02}", percentage);
+                let text = format!("{:02.0}", percentage);
                 label.set_label(&text);
 
                 cpu = system.cpu_load_aggregate()

@@ -18,9 +18,9 @@ impl Electrode for Battery {
                 loop {
                     match system.battery_life() {
                         Ok(battery) => {
-                            let percentage = (battery.remaining_capacity * 100.0).ceil();
+                            let percentage = battery.remaining_capacity * 100.0;
 
-                            let text = format!("{:02}", percentage);
+                            let text = format!("{:02.0}", percentage);
                             label.set_label(&text);
 
                             box_.set_visible(true);
