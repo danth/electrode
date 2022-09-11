@@ -13,6 +13,12 @@ with lib;
       default = true;
     };
 
+    color = mkOption {
+      description = "Color of the status bar text";
+      type = types.str;
+      default = "000000";
+    };
+
     extended = mkOption {
       description = "Whether to enable extra statistics such as CPU and memory usage";
       type = types.bool;
@@ -31,6 +37,7 @@ with lib;
 
       serviceConfig.ExecStart =
         "${self.packages.${pkgs.system}.default}/bin/electrode"
+        + " --color ${config.programs.electrode.color}"
         + optionalString config.programs.electrode.extended " --extended";
     };
 

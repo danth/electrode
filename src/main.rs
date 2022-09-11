@@ -26,14 +26,20 @@ use crate::electrodes::battery::Battery;
 /// A no-configuration status bar for Wayland compositors
 #[clap(name = "Electrode")]
 struct Cli {
-    /// Enable extra statistics such as CPU and memory usage
+    /// Color of the status bar text. This can be in any format allowed by CSS.
+    #[clap(long, default_value = "#000000")]
+    color: String,
+
+    /// Enable extra statistics such as CPU and memory usage.
     #[clap(long, parse(from_flag))]
     extended: bool
 }
 
-fn load_css() {
+fn load_css(color: &str) {
+    let css = include_str!("style.css").replace("#000000", color);
+
     let provider = gtk::CssProvider::new();
-    provider.load_from_data(include_bytes!("style.css")).expect("loading CSS");
+    provider.load_from_data(css.as_bytes()).expect("loading CSS");
 
     gtk::StyleContext::add_provider_for_screen(
         &gdk::Screen::default().expect("could not get default screen"),
@@ -48,7 +54,7 @@ fn main() {
 
     gtk::init().expect("could not initialise GTK");
 
-    load_css();
+    load_css(&arguments.color);
 
     let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
