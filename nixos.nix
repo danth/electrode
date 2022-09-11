@@ -16,7 +16,7 @@ with lib;
     color = mkOption {
       description = "Color of the status bar text";
       type = types.str;
-      default = "000000";
+      default = "#000000";
     };
   };
 
