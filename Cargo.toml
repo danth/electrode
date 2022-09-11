@@ -14,4 +14,3 @@ clap = { version = "^3", features = ["derive"] }
 gtk = "^0.15"
 gtk-layer-shell = "^0.4"
 libpulse-binding = "*"
-systemstat = "^0.1"

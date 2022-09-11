@@ -4,7 +4,6 @@ extern crate clap;
 extern crate gtk;
 extern crate gtk_layer_shell;
 extern crate libpulse_binding;
-extern crate systemstat;
 
 mod electrodes;
 
