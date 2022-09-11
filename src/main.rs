@@ -16,10 +16,6 @@ use gtk_layer_shell::{Edge, Layer};
 use crate::electrodes::Electrode;
 use crate::electrodes::clock::Clock;
 use crate::electrodes::volume::Volume;
-use crate::electrodes::network::Network;
-use crate::electrodes::memory::Memory;
-use crate::electrodes::cpu::Cpu;
-use crate::electrodes::cpu_temperature::CpuTemperature;
 use crate::electrodes::battery::Battery;
 
 #[derive(Parser)]
@@ -28,11 +24,7 @@ use crate::electrodes::battery::Battery;
 struct Cli {
     /// Color of the status bar text. This can be in any format allowed by CSS.
     #[clap(long, default_value = "#000000")]
-    color: String,
-
-    /// Enable extra statistics such as CPU and memory usage.
-    #[clap(long, parse(from_flag))]
-    extended: bool
+    color: String
 }
 
 fn load_css(color: &str) {
@@ -87,14 +79,6 @@ fn main() {
     main_box.add(&statistics_box);
 
     Volume::setup(&statistics_box);
-
-    if arguments.extended {
-        Network::setup(&statistics_box);
-        Memory::setup(&statistics_box);
-        Cpu::setup(&statistics_box);
-        CpuTemperature::setup(&statistics_box);
-    }
-
     Battery::setup(&statistics_box);
 
     window.show_all();

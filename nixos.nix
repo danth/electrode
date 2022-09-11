@@ -18,12 +18,6 @@ with lib;
       type = types.str;
       default = "000000";
     };
-
-    extended = mkOption {
-      description = "Whether to enable extra statistics such as CPU and memory usage";
-      type = types.bool;
-      default = false;
-    };
   };
 
   config = mkIf config.programs.electrode.enable {
@@ -37,8 +31,7 @@ with lib;
 
       serviceConfig.ExecStart =
         "${self.packages.${pkgs.system}.default}/bin/electrode"
-        + " --color ${config.programs.electrode.color}"
-        + optionalString config.programs.electrode.extended " --extended";
+        + " --color ${config.programs.electrode.color}";
     };
 
     fonts.fonts = [ pkgs.font-awesome ];

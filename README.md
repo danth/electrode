@@ -31,12 +31,6 @@ development packages available.
 
 ## Options
 
-Running Electrode with no arguments will display only the most necessary
-information: the clock, volume and battery level.
-
-You can add `--extended` to enable extra statistics such as CPU and memory
-usage.
-
 Use the `--color` flag to change the text to suit your wallpaper image.
 This accepts any CSS color format.
 
