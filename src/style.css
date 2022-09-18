@@ -1,10 +1,3 @@
-window {
-	background-color: rgba(0, 0, 0, 0);
-
-	/* This is replaced with the chosen color by the Rust code */
-	color: #000000;
-}
-
 window > box {
 	padding: 5px 0;
 }

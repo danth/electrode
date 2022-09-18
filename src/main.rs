@@ -1,13 +1,11 @@
 extern crate async_std;
 extern crate chrono;
-extern crate clap;
 extern crate gtk;
 extern crate gtk_layer_shell;
 extern crate libpulse_binding;
 
 mod electrodes;
 
-use clap::Parser;
 use gtk::gdk;
 use gtk::prelude::*;
 use gtk_layer_shell::{Edge, Layer};
@@ -17,17 +15,8 @@ use crate::electrodes::clock::Clock;
 use crate::electrodes::volume::Volume;
 use crate::electrodes::battery::Battery;
 
-#[derive(Parser)]
-/// A no-configuration status bar for Wayland compositors
-#[clap(name = "Electrode")]
-struct Cli {
-    /// Color of the status bar text. This can be in any format allowed by CSS.
-    #[clap(long, default_value = "#000000")]
-    color: String
-}
-
-fn load_css(color: &str) {
-    let css = include_str!("style.css").replace("#000000", color);
+fn load_css() {
+    let css = include_str!("style.css");
 
     let provider = gtk::CssProvider::new();
     provider.load_from_data(css.as_bytes()).expect("loading CSS");
@@ -40,12 +29,9 @@ fn load_css(color: &str) {
 }
 
 fn main() {
-    // Panics if the arguments are invalid
-    let arguments = Cli::parse();
-
     gtk::init().expect("could not initialise GTK");
 
-    load_css(&arguments.color);
+    load_css();
 
     let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
