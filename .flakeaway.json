@@ -1,9 +1,0 @@
-{
-	"outputStores": [
-		{
-			"store": "danth",
-			"authToken": "DKe5Bu91WwF/IbcwqQfwg5NnkhWMfpVBnIzhP7W4MdZPJg64I0+F9VL6oyCV2cTIhMTGtiTSTZG2CzU8PF5lLANF5xcBpeYiZnBAzRjxH+kFdQb7JMT+1dWgq5pPXe0Pw5twkPKFi9M25TO/yLlF05MlcTzh2DOqG5gH1zW6mmLHxmuDty1Dqc5ZWSULY9z8qflV8dl5eJiZxqyvgG2IlAp5vklzri7vlbUtdgVT1z2g63NIk/0h2rC5tXW3a/XBPr95nF7uLd+7tORDUufCMJXrMBm8eeLRqY77SVyzAIhEPbm6NJGizoyxqseAojzpvVp22Yy2ZuX9pEi7aOxA/Q==",
-			"type": "cachix"
-		}
-	]
-}
