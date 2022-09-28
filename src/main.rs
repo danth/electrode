@@ -21,13 +21,9 @@ use crate::electrodes::volume::Volume;
 use crate::electrodes::battery::Battery;
 
 fn read_user_css() -> Option<String> {
-    let base_dirs = BaseDirectories::with_prefix("electrode").unwrap();
-
-    if let Some(config_file) = base_dirs.find_config_file("style.css") {
-        Some(fs::read_to_string(config_file).unwrap())
-    } else {
-        None
-    }
+    BaseDirectories::with_prefix("electrode").unwrap()
+        .find_config_file("style.css")
+        .map(|config_file| fs::read_to_string(config_file).unwrap())
 }
 
 fn load_css(css: &str, priority: u32) {
