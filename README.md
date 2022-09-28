@@ -50,3 +50,20 @@ ExecStart=/path/to/electrode/bin/electrode
 You will also need to install Font Awesome for the icons.
 
 Change `ExecStart` to the location of your compiled Electrode binary.
+
+## Styling
+
+Electrode will read `/etc/xdg/electrode/style.css` or `~/.config/electrode/style.css`,
+if either of them exist.
+
+This can be used to change its appearance, for example to make the background
+transparent:
+
+```css
+window > box {
+	background-color: rgba(0, 0, 0, 255);
+}
+```
+
+Because GTK has to include a CSS parser anyway to load the default styles, this
+configurability does not add much overhead.

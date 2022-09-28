@@ -3,6 +3,7 @@ extern crate chrono;
 extern crate gtk;
 extern crate gtk_layer_shell;
 extern crate libpulse_binding;
+extern crate xdg;
 
 mod electrodes;
 
@@ -10,28 +11,44 @@ use gtk::gdk;
 use gtk::prelude::*;
 use gtk_layer_shell::{Edge, Layer};
 
+use xdg::BaseDirectories;
+
+use std::fs;
+
 use crate::electrodes::Electrode;
 use crate::electrodes::clock::Clock;
 use crate::electrodes::volume::Volume;
 use crate::electrodes::battery::Battery;
 
-fn load_css() {
-    let css = include_str!("style.css");
+fn read_user_css() -> Option<String> {
+    let base_dirs = BaseDirectories::with_prefix("electrode").unwrap();
 
+    if let Some(config_file) = base_dirs.find_config_file("style.css") {
+        Some(fs::read_to_string(config_file).unwrap())
+    } else {
+        None
+    }
+}
+
+fn load_css(css: &str, priority: u32) {
     let provider = gtk::CssProvider::new();
     provider.load_from_data(css.as_bytes()).expect("loading CSS");
 
     gtk::StyleContext::add_provider_for_screen(
         &gdk::Screen::default().expect("could not get default screen"),
         &provider,
-        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION
+        priority
     );
 }
 
 fn main() {
     gtk::init().expect("could not initialise GTK");
 
-    load_css();
+    load_css(include_str!("style.css"), gtk::STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+    if let Some(user_css) = read_user_css() {
+        load_css(&user_css, gtk::STYLE_PROVIDER_PRIORITY_USER);
+    }
 
     let window = gtk::Window::new(gtk::WindowType::Toplevel);
 
