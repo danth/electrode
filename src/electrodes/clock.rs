@@ -41,13 +41,13 @@ impl Electrode for Clock {
                     let now: DateTime<Local> = Local::now();
 
                     let text = match now.weekday() {
-                        Weekday::Mon => "mo",
-                        Weekday::Tue => "tu",
-                        Weekday::Wed => "we",
-                        Weekday::Thu => "th",
-                        Weekday::Fri => "fr",
-                        Weekday::Sat => "sa",
-                        Weekday::Sun => "su"
+                        Weekday::Mon => "01",
+                        Weekday::Tue => "02",
+                        Weekday::Wed => "03",
+                        Weekday::Thu => "04",
+                        Weekday::Fri => "05",
+                        Weekday::Sat => "06",
+                        Weekday::Sun => "07"
                     };
                     day_label.set_label(text);
 
