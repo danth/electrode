@@ -597,9 +597,9 @@ dependencies = [
 
 [[package]]
 name = "gtk-layer-shell"
-version = "0.4.3"
+version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1c5f62de019cfa508885e1926ca86796cfbd903047e3b178f829681c0dcf862"
+checksum = "4316ff523ae445bd6efaf253f217598dd074619fe67b9199b5b0cd5ff99144da"
 dependencies = [
  "bitflags",
  "gdk",
