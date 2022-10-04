@@ -9,11 +9,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1659899253,
-        "narHash": "sha256-hFdU0tjtdGmEHkUHXdwEq8EUaxF7JvWhHmBZrfjyy2U=",
+        "lastModified": 1664412889,
+        "narHash": "sha256-gyVtTQf3CiXLe1cwNRFxqUqYl9BCmIDvK7hIpzR/oQU=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "7474abe5439481a0ea61204a1a751a3ea7dc9ebc",
+        "rev": "755acd231a7de182fdc772bee1b2a1f21d4ec9ed",
         "type": "github"
       },
       "original": {
@@ -40,41 +40,26 @@
     },
     "flake-utils": {
       "locked": {
-        "lastModified": 1656928814,
-        "narHash": "sha256-RIFfgBuKz6Hp89yRr7+NR5tzIAbn52h8vT6vXkYjZoM=",
+        "lastModified": 1659877975,
+        "narHash": "sha256-zllb8aq3YO3h8B/U0/J1WBgAL8EX5yWf5pMj3G0NAmc=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "7e2a3b3dfd9af950a856d66b0a7d01e3c18aa249",
+        "rev": "c0e246b9b83f637f4681389ecabcb2681b4f3af0",
         "type": "github"
       },
       "original": {
         "owner": "numtide",
         "repo": "flake-utils",
-        "type": "github"
-      }
-    },
-    "nix-filter": {
-      "locked": {
-        "lastModified": 1659352118,
-        "narHash": "sha256-X/Tdlj/PYxcQg/1hcHXxdnDr5zLO22LohIudX+oT968=",
-        "owner": "numtide",
-        "repo": "nix-filter",
-        "rev": "3e1fff9ec0112fe5ec61ea7cc6d37c1720d865f8",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "nix-filter",
         "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1659997308,
-        "narHash": "sha256-HE6/92aGtTSl9wDRISdiLfYDxCWlZdlAMEz4vNzxbec=",
+        "lastModified": 1664904529,
+        "narHash": "sha256-mGlB/SQR4E9jb7fOOxCTJlwL6Mk1Dpyvi4UrOXL6C18=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "92ebe36c276513b797ef3ad1f8de143addbae381",
+        "rev": "b7a47253e0c8cb04c0a3f8ed3149e90229e62884",
         "type": "github"
       },
       "original": {
@@ -86,7 +71,6 @@
     "root": {
       "inputs": {
         "crane": "crane",
-        "nix-filter": "nix-filter",
         "nixpkgs": "nixpkgs",
         "utils": "utils"
       }

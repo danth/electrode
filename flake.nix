@@ -7,13 +7,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    nix-filter.url = "github:numtide/nix-filter";
-
     utils.url = "github:numtide/flake-utils";
   };
 
   outputs =
-    { self, nixpkgs, crane, nix-filter, utils, ... }:
+    { self, nixpkgs, crane, utils, ... }:
     {
       nixosModules.electrode = import ./nixos.nix self;
     } //
@@ -23,14 +21,7 @@
         craneLib = crane.lib.${system};
 
         commonArguments = rec {
-          src = nix-filter.lib {
-            root = ./.;
-            include = with nix-filter.lib; [
-              "Cargo.toml"
-              "Cargo.lock"
-              (inDirectory "src")
-            ];
-          };
+          src = craneLib.cleanCargoSource ./.;
 
           nativeBuildInputs = with pkgs; [ pkg-config ];
           buildInputs = with pkgs; [ gtk3 gtk-layer-shell pulseaudio ];
