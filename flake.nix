@@ -21,7 +21,12 @@
         craneLib = crane.lib.${system};
 
         commonArguments = rec {
-          src = craneLib.cleanCargoSource ./.;
+          src = with pkgs.lib; cleanSourceWith {
+            src = cleanSource ./.;
+            filter = path: type:
+              hasSuffix "/src/style.css" path ||
+              craneLib.filterCargoSources path type;
+          };
 
           nativeBuildInputs = with pkgs; [ pkg-config ];
           buildInputs = with pkgs; [ gtk3 gtk-layer-shell pulseaudio ];
