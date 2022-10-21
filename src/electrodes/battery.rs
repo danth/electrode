@@ -1,16 +1,16 @@
 use async_std::task;
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
-use crate::electrodes::{DEFAULT_POLLING_DURATION, Electrode, make_icon};
+use crate::electrodes::{DEFAULT_POLLING_DURATION, Electrode, make_label};
 
 pub struct Battery;
 
 impl Electrode for Battery {
     fn setup(parent: &gtk::Box) {
-        let (box_, label) = make_icon(parent, "");
+        let label = make_label(parent);
 
         glib::MainContext::default().spawn_local(clone!(
-            @weak box_, @weak label =>
+            @weak label =>
             async move {
                 loop {
                     match std::fs::read_to_string("/sys/class/power_supply/BAT0/capacity") {
@@ -20,15 +20,15 @@ impl Electrode for Battery {
                                 .parse()
                                 .expect("parsing battery capacity");
 
-                            let text = format!("{:02.0}", percentage);
+                            let text = format!("{:02.0}%", percentage);
                             label.set_label(&text);
 
-                            box_.set_visible(true);
+                            label.set_visible(true);
                         },
 
                         Err(_) => {
                             // Most likely there is no battery installed
-                            box_.set_visible(false);
+                            label.set_visible(false);
                         }
                     }
 

@@ -55,29 +55,38 @@ fn main() {
         .monitor(0)
         .expect("could not get first monitor");
 
-    let height = monitor.geometry().height();
-    window.set_default_size(33, height);
-    window.set_size_request(33, height);
+    let width = monitor.geometry().width();
+    window.set_default_size(width, 25);
+    window.set_size_request(width, 25);
 
     gtk_layer_shell::init_for_window(&window);
     gtk_layer_shell::set_monitor(&window, &monitor);
     gtk_layer_shell::set_layer(&window, Layer::Bottom);
-    gtk_layer_shell::set_anchor(&window, Edge::Left, true);
+    gtk_layer_shell::set_anchor(&window, Edge::Top, true);
     gtk_layer_shell::auto_exclusive_zone_enable(&window);
     gtk_layer_shell::set_keyboard_interactivity(&window, false);
 
-    let main_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
+    let main_box = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    main_box.set_homogeneous(true);
     window.add(&main_box);
 
-    Clock::setup(&main_box);
+    let left_box = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    left_box.set_halign(gtk::Align::Start);
+    main_box.add(&left_box);
 
-    let statistics_box = gtk::Box::new(gtk::Orientation::Vertical, 5);
-    statistics_box.set_vexpand(true);
-    statistics_box.set_valign(gtk::Align::End);
-    main_box.add(&statistics_box);
+    Battery::setup(&left_box);
 
-    Volume::setup(&statistics_box);
-    Battery::setup(&statistics_box);
+    let center_box = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    center_box.set_halign(gtk::Align::Center);
+    main_box.add(&center_box);
+
+    Clock::setup(&center_box);
+
+    let right_box = gtk::Box::new(gtk::Orientation::Horizontal, 10);
+    right_box.set_halign(gtk::Align::End);
+    main_box.add(&right_box);
+
+    Volume::setup(&right_box);
 
     window.show_all();
 

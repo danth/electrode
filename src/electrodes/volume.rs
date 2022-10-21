@@ -8,7 +8,7 @@ use libpulse_binding::mainloop::standard::{IterateResult, Mainloop};
 use libpulse_binding::proplist::{Proplist};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use crate::electrodes::{Electrode, make_icon};
+use crate::electrodes::{Electrode, make_label};
 
 fn connect_to_pulseaudio() -> (Mainloop, Context) {
     let mut proplist = Proplist::new().expect("could not create PulseAudio proplist");
@@ -142,8 +142,8 @@ pub struct Volume;
 
 impl Electrode for Volume {
     fn setup(parent: &gtk::Box) {
-        let (box_, label) = make_icon(parent, "");
-        box_.set_visible(false);
+        let label = make_label(parent);
+        label.set_visible(false);
 
         let (sender, receiver) = glib::MainContext::channel(glib::PRIORITY_DEFAULT);
 
@@ -156,27 +156,16 @@ impl Electrode for Volume {
                 if let Some(volume) = volume {
                     match volume {
                         VolumeSetting::Muted => {
-                            label.set_label("00");
+                            label.set_label("Mute");
                         },
                         VolumeSetting::Volume(volume) => {
-                            let percentage = volume.print();
-
-                            // Remove the % symbol
-                            let text = percentage[.. percentage.len() - 1].trim().to_string();
-
-                            // Pad to 2 characters
-                            if text.len() >= 2 {
-                                label.set_label(&text);
-                            } else {
-                                let text = format!("0{}", text);
-                                label.set_label(&text);
-                            }
+                            label.set_label(&volume.print());
                         }
                     }
 
-                    box_.set_visible(true);
+                    label.set_visible(true);
                 } else {
-                    box_.set_visible(false);
+                    label.set_visible(false);
                 }
 
                 Continue(true)

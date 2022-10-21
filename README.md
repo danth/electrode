@@ -1,18 +1,15 @@
-<img src="screenshot.webp" alt="Screenshot of Electrode" align="left" />
-
 # Electrode
 
 There are loads of customisable status bars out there. Some are suffering from
 [feature creep](https://en.wikipedia.org/wiki/Feature_creep). Others pull
 information from user supplied scripts, which can become highly inefficient.
 
+![Screenshot of Electrode](screenshot.webp)
+
 Electrode has a negligible impact on the system, as all of its features are
 written in Rust, and compiled into a single binary of around 1MiB.
 
 It has no configurable options.
-
-If you have multiple monitors, Electrode will only appear on the leftmost
-monitor. This is done to maximise the amount of usable screen space.
 
 ## Demo
 

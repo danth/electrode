@@ -1,9 +1,9 @@
 use async_std::task;
-use chrono::{Local, Datelike, DateTime, Timelike, Utc, Weekday};
+use chrono::{Local, Datelike, DateTime, Timelike, Utc};
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
 use std::time::Duration;
-use crate::electrodes::{Electrode, make_icon};
+use crate::electrodes::{Electrode, make_label};
 
 // Sleep until the current time in seconds changes
 async fn tick() {
@@ -30,9 +30,9 @@ pub struct Clock;
 
 impl Electrode for Clock {
     fn setup(parent: &gtk::Box) {
-        let (_, day_label) = make_icon(parent, "");
-        let (_, date_label) = make_icon(parent, "");
-        let (_, time_label) = make_icon(parent, "");
+        let day_label = make_label(parent);
+        let date_label = make_label(parent);
+        let time_label = make_label(parent);
 
         glib::MainContext::default().spawn_local(clone!(
             @weak day_label, @weak date_label, @weak time_label =>
@@ -40,22 +40,12 @@ impl Electrode for Clock {
                 loop {
                     let now: DateTime<Local> = Local::now();
 
-                    let text = match now.weekday() {
-                        Weekday::Mon => "01",
-                        Weekday::Tue => "02",
-                        Weekday::Wed => "03",
-                        Weekday::Thu => "04",
-                        Weekday::Fri => "05",
-                        Weekday::Sat => "06",
-                        Weekday::Sun => "07"
-                    };
-                    day_label.set_label(text);
+                    day_label.set_label(&now.weekday().to_string());
 
-                    let year = &now.year().to_string()[2..4];
-                    let text = format!("{}\n{:02}\n{:02}", year, now.month(), now.day());
+                    let text = format!("{:04}/{:02}/{:02}", now.year(), now.month(), now.day());
                     date_label.set_label(&text);
 
-                    let text = format!("{:02}\n{:02}\n{:02}", now.hour(), now.minute(), now.second());
+                    let text = format!("{:02}:{:02}:{:02}", now.hour(), now.minute(), now.second());
                     time_label.set_label(&text);
 
                     tick().await;

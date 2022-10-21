@@ -39,7 +39,5 @@ with lib;
         }}";
       };
     };
-
-    fonts.fonts = [ pkgs.font-awesome ];
   };
 }

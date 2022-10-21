@@ -7,20 +7,13 @@ use std::time::Duration;
 
 pub const DEFAULT_POLLING_DURATION: Duration = Duration::from_millis(2500);
 
-pub fn make_icon(parent_box: &gtk::Box, icon: &str) -> (gtk::Box, gtk::Label) {
-    let box_ = gtk::Box::new(gtk::Orientation::Vertical, 3);
-    box_.style_context().add_class("electrode");
-    parent_box.add(&box_);
-
-    let icon = gtk::Label::new(Some(icon));
-    icon.style_context().add_class("icon");
-    box_.add(&icon);
-
+pub fn make_label(parent_box: &gtk::Box) -> gtk::Label {
     let label = gtk::Label::new(None);
     label.set_justify(gtk::Justification::Center);
-    box_.add(&label);
 
-    (box_, label)
+    parent_box.add(&label);
+
+    label
 }
 
 pub trait Electrode {
