@@ -7,10 +7,11 @@ pub struct Battery;
 
 impl Electrode for Battery {
     fn setup(parent: &gtk::Box) {
-        let label = make_label(parent);
+        let percentage_label = make_label(parent);
+        let power_label = make_label(parent);
 
         glib::MainContext::default().spawn_local(clone!(
-            @weak label =>
+            @weak percentage_label, @weak power_label =>
             async move {
                 loop {
                     match std::fs::read_to_string("/sys/class/power_supply/BAT0/capacity") {
@@ -21,14 +22,39 @@ impl Electrode for Battery {
                                 .expect("parsing battery capacity");
 
                             let text = format!("{:02.0}%", percentage);
-                            label.set_label(&text);
+                            percentage_label.set_label(&text);
 
-                            label.set_visible(true);
+                            percentage_label.set_visible(true);
                         },
-
                         Err(_) => {
                             // Most likely there is no battery installed
-                            label.set_visible(false);
+                            percentage_label.set_visible(false);
+                        }
+                    }
+
+                    match (
+                        std::fs::read_to_string("/sys/class/power_supply/BAT0/voltage_now"),
+                        std::fs::read_to_string("/sys/class/power_supply/BAT0/current_now")
+                    ) {
+                        (Ok(voltage), Ok(current)) => {
+                            let voltage: f64 = voltage
+                                .trim()
+                                .parse()
+                                .expect("parsing voltage");
+                            let current: f64 = current
+                                .trim()
+                                .parse()
+                                .expect("parsing current");
+                            let power = (voltage / 1000000.0) * (current / 1000000.0);
+
+                            let text = format!("{:.1}W", power);
+                            power_label.set_label(&text);
+
+                            power_label.set_visible(true);
+                        },
+                        _ => {
+                            // Most likely there is no battery installed
+                            power_label.set_visible(false);
                         }
                     }
 
