@@ -14,6 +14,7 @@
     { self, nixpkgs, crane, utils, ... }:
     {
       nixosModules.electrode = import ./nixos.nix self;
+      hydraJobs.electrode = self.packages.x86_64-linux.default;
     } //
     utils.lib.eachSystem [ "aarch64-linux" "i686-linux" "x86_64-linux" ] (system:
       let
@@ -36,14 +37,6 @@
 
       in {
         packages.default = craneLib.buildPackage commonArguments;
-
-        checks.clippy = craneLib.cargoClippy (commonArguments // {
-          cargoClippyExtraArgs = "-- --deny warnings";
-        });
-
-        devShells.default = with pkgs; mkShell {
-          nativeBuildInputs = [ cargo ];
-        };
       }
     );
 }
