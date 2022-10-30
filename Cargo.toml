@@ -9,6 +9,7 @@ license = "GPL-3.0"
 
 [dependencies]
 async-std = "^1"
+battery = "^0.7"
 chrono = "^0.4"
 gtk = "^0.15"
 gtk-layer-shell = "^0.4"

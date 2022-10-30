@@ -1,4 +1,5 @@
 extern crate async_std;
+extern crate battery;
 extern crate chrono;
 extern crate gtk;
 extern crate gtk_layer_shell;

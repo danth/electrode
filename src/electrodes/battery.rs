@@ -1,66 +1,42 @@
 use async_std::task;
+use battery::Manager;
+use battery::units::power::watt;
+use battery::units::ratio::percent;
 use gtk::prelude::*;
 use gtk::glib::{self, clone};
 use crate::electrodes::{DEFAULT_POLLING_DURATION, Electrode, make_label};
+
+fn setup_battery(parent: &gtk::Box, mut battery: battery::Battery) {
+    let percentage_label = make_label(parent);
+    let power_label = make_label(parent);
+
+    glib::MainContext::default().spawn_local(clone!(
+        @weak percentage_label, @weak power_label =>
+        async move {
+            loop {
+                let percentage = battery.state_of_charge().get::<percent>();
+                let percentage_text = format!("{:.0}%", percentage);
+                percentage_label.set_label(&percentage_text);
+
+                let power = battery.energy_rate().get::<watt>();
+                let power_text = format!("{:.1}W", power);
+                power_label.set_label(&power_text);
+
+                task::sleep(DEFAULT_POLLING_DURATION).await;
+
+                Manager::new().unwrap().refresh(&mut battery).unwrap();
+            }
+        }
+    ));
+}
 
 pub struct Battery;
 
 impl Electrode for Battery {
     fn setup(parent: &gtk::Box) {
-        let percentage_label = make_label(parent);
-        let power_label = make_label(parent);
-
-        glib::MainContext::default().spawn_local(clone!(
-            @weak percentage_label, @weak power_label =>
-            async move {
-                loop {
-                    match std::fs::read_to_string("/sys/class/power_supply/BAT0/capacity") {
-                        Ok(percentage) => {
-                            let percentage: u64 = percentage
-                                .trim()
-                                .parse()
-                                .expect("parsing battery capacity");
-
-                            let text = format!("{:02.0}%", percentage);
-                            percentage_label.set_label(&text);
-
-                            percentage_label.set_visible(true);
-                        },
-                        Err(_) => {
-                            // Most likely there is no battery installed
-                            percentage_label.set_visible(false);
-                        }
-                    }
-
-                    match (
-                        std::fs::read_to_string("/sys/class/power_supply/BAT0/voltage_now"),
-                        std::fs::read_to_string("/sys/class/power_supply/BAT0/current_now")
-                    ) {
-                        (Ok(voltage), Ok(current)) => {
-                            let voltage: f64 = voltage
-                                .trim()
-                                .parse()
-                                .expect("parsing voltage");
-                            let current: f64 = current
-                                .trim()
-                                .parse()
-                                .expect("parsing current");
-                            let power = (voltage / 1000000.0) * (current / 1000000.0);
-
-                            let text = format!("{:.1}W", power);
-                            power_label.set_label(&text);
-
-                            power_label.set_visible(true);
-                        },
-                        _ => {
-                            // Most likely there is no battery installed
-                            power_label.set_visible(false);
-                        }
-                    }
-
-                    task::sleep(DEFAULT_POLLING_DURATION * 5).await;
-                }
-            }
-        ));
+        for battery in Manager::new().unwrap().batteries().unwrap() {
+            setup_battery(parent, battery.unwrap());
+        }
     }
 }
+

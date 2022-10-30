@@ -5,7 +5,7 @@ pub mod battery;
 use gtk::prelude::*;
 use std::time::Duration;
 
-pub const DEFAULT_POLLING_DURATION: Duration = Duration::from_millis(2500);
+pub const DEFAULT_POLLING_DURATION: Duration = Duration::from_millis(5000);
 
 pub fn make_label(parent_box: &gtk::Box) -> gtk::Label {
     let label = gtk::Label::new(None);
