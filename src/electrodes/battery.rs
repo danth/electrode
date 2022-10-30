@@ -10,6 +10,8 @@ fn setup_battery(parent: &gtk::Box, mut battery: battery::Battery) {
     let percentage_label = make_label(parent);
     let power_label = make_label(parent);
 
+    let manager = Manager::new().unwrap();
+
     glib::MainContext::default().spawn_local(clone!(
         @weak percentage_label, @weak power_label =>
         async move {
@@ -24,7 +26,7 @@ fn setup_battery(parent: &gtk::Box, mut battery: battery::Battery) {
 
                 task::sleep(DEFAULT_POLLING_DURATION).await;
 
-                Manager::new().unwrap().refresh(&mut battery).unwrap();
+                manager.refresh(&mut battery).unwrap();
             }
         }
     ));
